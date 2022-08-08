@@ -6,63 +6,84 @@
 		Blackblood
 	</title>
 	<link rel="icon" type="image/jpg" href="imgs/pageIcon.jpg"/>
+	<link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
-	<main>
-		<h1>Experimental Page</h1>
-
-		<section>
-			<h2>Media</h2>
-			<ul>
-				<li>
-					<h3>2Cellos Smells Like Teen Spirit</h3>
-					<audio src="audio/smellsLikeTeenSpirit.mp3" controls>2Cellos - Smells Like Teen Spirit</audio>
-				</li>
-				<li>
-					<h3>Michael Jackson - Billie Jean by Daniela Andrade</h3>
-					<audio src="audio/billieJeanByDanielaAndrade.mp3" controls>Michael Jackson - Billie Jean by Daniela Andrade</audio>
-				</li>
-			</ul>
-		</section>
-
-		<section>
-			<h2>Games</h2>
-			<div>
-				<table border = "1" width=150 height=150>
-					<caption>Tic-Tac-Toe</caption>
-					<tr>
-						<td>1</td><td>2</td><td>3</td>
-					</tr>
-					<tr>
-						<td>4</td><td>5</td><td>6</td>
-					</tr>
-					<tr>
-						<td>7</td><td>8</td><td>9</td>
-					</tr>
-				</table>
-				<details>
-					<summary>Rules.</summary>
+	<div id="container">
+		<header>
+			<h1>Blackblood</h1>
+		</header>
+		<div id="main">
+			<main>
+				<h1>Experimental Page</h1>
+				<nav>
 					<ul>
-						<li>Click to put your mark.</li>
-						<li>'1' and '2' keys defines if you wanna go first or second.</li>
-						<li>'R' resets the game.</li>
+						<li>
+							<a href="#media">Media.</a>
+						</li>
+						<li>
+							<a href="#games">Games.</a>
+						</li>
+						<li>
+							<a href="#recursion">Recursion.</a>
+						</li>
 					</ul>
-				</details>
-			</div>
-		</section>
+				</nav>
+				<hr>
+				<section>
+					<h2 id="media">Media</h2>
+					<ul>
+						<li>
+							<h3>2Cellos Smells Like Teen Spirit</h3>
+							<audio src="audio/smellsLikeTeenSpirit.mp3" controls>2Cellos - Smells Like Teen Spirit</audio>
+						</li>
+						<li>
+							<h3>Michael Jackson - Billie Jean by Daniela Andrade</h3>
+							<audio src="audio/billieJeanByDanielaAndrade.mp3" controls>Michael Jackson - Billie Jean by Daniela Andrade</audio>
+						</li>
+					</ul>
+				</section>
 
-		<section>
-			<h2>Recursion</h2>
-			<iframe src="index.html" title="Recursion" name="indexPage"></iframe>
-		</section>
+				<section>
+					<h2 id="games">Games</h2>
+					<div>
+						<table>
+							<caption>Tic-Tac-Toe</caption>
+							<tr>
+								<td>1</td><td>2</td><td>3</td>
+							</tr>
+							<tr>
+								<td>4</td><td>5</td><td>6</td>
+							</tr>
+							<tr>
+								<td>7</td><td>8</td><td>9</td>
+							</tr>
+						</table>
+						<details>
+							<summary>Rules.</summary>
+							<ul>
+								<li>Click to put your mark.</li>
+								<li>'1' and '2' keys defines if you wanna go first or second.</li>
+								<li>'R' resets the game.</li>
+							</ul>
+						</details>
+					</div>
+				</section>
 
-	</main>
-	<footer>
-		<hr>
-		<a href="index.html">
-			<p><b>Go Back.</b></p>
-		</a>
-		<p>Think of a more interesting footer</p>
-	</footer>
+				<section>
+					<h2 id=recursion>Recursion</h2>
+					<iframe src="index.html" title="Recursion" name="indexPage"></iframe>
+				</section>
+
+			</main>
+		</div>
+		<footer>
+			<hr>
+			<a href="index.html">
+				<p class="Blackblood"><b>Blackblood</b></p>
+			</a>
+			<p> David A.</p>
+		</footer>
+	</div>
 </body>
 </html>
