@@ -49,7 +49,7 @@ footer{
 
 iframe{
 	width:  100%;
-	height:  500px;
+	height:  600px;
 }
 
 table{
@@ -69,4 +69,15 @@ h1{
 
 img{
 	width: 50%;
+}
+
+section{
+	text-align: justify;
+}
+
+.PageName{
+	font-style: normal;
+	font-family: Courier New;
+	color: #00b1ff;
+	text-decoration-line: none;
 }
