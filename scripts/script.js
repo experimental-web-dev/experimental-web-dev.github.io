@@ -24,7 +24,6 @@ function setTheme(dark){
 			element.classList.remove("dark-mode");
 		}
 		document.cookie = "theme=light";
-		console.log(document.cookie);
 	}
 	let allcookies = document.cookie;
 	console.log(allcookies);
@@ -40,6 +39,5 @@ function toggleTheme(){
 }
 
 (function(){
-	document.cookie = "username=John Doe";
 	setThemeFromCookie();
 })();
