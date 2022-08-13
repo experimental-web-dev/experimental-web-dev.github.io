@@ -9,16 +9,16 @@
 	<link rel="stylesheet" href="css/style.css"/>
 	<script src="https://kit.fontawesome.com/b6bfb0c6c4.js" crossorigin="anonymous"></script>
 </head>
-<body class = "light-mode">
+<body>
 	<div id="container">
-		<header class = "light-mode">
+		<header>
 			<a class="page-name" href="index.html"><h1>Blackblood</h1></a>
 		</header>
-		<div class="toggle-dark-mode light-mode">
+		<div class="toggle-dark-mode">
 				<i class="far fa-sun"></i>
 		</div>
 		<div id="main">
-			<main class = "light-mode">
+			<main>
 				<h1>Experimental Page</h1>
 				<nav>
 					<ul>
@@ -57,25 +57,29 @@
 					<h2 id="games">Games</h2>
 					<div>
 						<table>
-							<caption>Tic-Tac-Toe</caption>
+							<caption>
+								<span>Tic-Tac-Toe</span>
+								<br>
+								<span class="display">Player X turn.</span>
+							</caption>
 							<tr>
-								<td>1</td><td>2</td><td>3</td>
+								<td class="ttt"></td><td class="ttt"></td><td class="ttt"></td>
 							</tr>
 							<tr>
-								<td>4</td><td>5</td><td>6</td>
+								<td class="ttt"></td><td class="ttt"></td><td class="ttt"></td>
 							</tr>
 							<tr>
-								<td>7</td><td>8</td><td>9</td>
+								<td class="ttt"></td><td class="ttt"></td><td class="ttt">X</td>
 							</tr>
 						</table>
 						<details>
 							<summary>Rules.</summary>
 							<ul>
 								<li>Click to put your mark.</li>
-								<li>'1' and '2' keys defines if you wanna go first or second.</li>
 								<li>'R' resets the game.</li>
 							</ul>
 						</details>
+						<script src="scripts/tic-tac-toe.js"></script>
 					</div>
 				</section>
 
@@ -86,7 +90,7 @@
 
 			</main>
 		</div>
-		<footer class = "light-mode">
+		<footer>
 			<hr>
 			<a class="page-name" href="index.html">
 				<p><b>Blackblood</b></p>
@@ -94,6 +98,6 @@
 			<p> David A.</p>
 		</footer>
 	</div>
-	<script src="scripts/script.js"></script>
+	<script src="scripts/dark-mode.js"></script>
 </body>
 </html>

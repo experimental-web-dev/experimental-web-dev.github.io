@@ -1,4 +1,4 @@
-const lightCollection = document.querySelectorAll(".light-mode");
+const lightCollection = document.querySelectorAll("body, header, main, footer, a, .toggle-dark-mode");
 const toggle_dark_mode = document.querySelector(".toggle-dark-mode");
 
 var dark_mode = false;
@@ -13,7 +13,6 @@ function isThemeSelected(){
 
 function setTheme(dark){
 	dark_mode = dark;
-	console.log(dark_mode);
 	if (dark_mode){
 		for (const element of lightCollection){
 			element.classList.add("dark-mode");
