@@ -18,11 +18,13 @@ function setTheme(dark){
 		for (const element of lightCollection){
 			element.classList.add("dark-mode");
 		}
+		toggle_dark_mode.firstElementChild.className="far fa-moon";
 		document.cookie = "theme=dark";
 	}else{
 		for (const element of lightCollection){
 			element.classList.remove("dark-mode");
 		}
+		toggle_dark_mode.firstElementChild.className="far fa-sun";
 		document.cookie = "theme=light";
 	}
 	let allcookies = document.cookie;
