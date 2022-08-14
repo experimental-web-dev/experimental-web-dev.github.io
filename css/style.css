@@ -145,3 +145,7 @@ a:hover{
 a.dark-mode{
 	color: #d445e4;
 }
+
+td.dark-mode{
+	background-color: #151515;
+}
