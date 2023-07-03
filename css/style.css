@@ -66,13 +66,13 @@ td{
 	background-color: antiquewhite;
 }
 
+section{
+	font-family: 'Roboto', sans-serif;
+}
+
 h1{
 	font-family: Courier New;
 	color: #00b1ff;
-}
-
-section{
-	text-align: justify;
 }
 
 h2{
@@ -138,7 +138,12 @@ footer.dark-mode{
 	background-color: #151515;
 }
 
+section p{
+	text-align: justify;
+}
+
 a{
+	font-family: 'Roboto', sans-serif;
 	text-decoration-line: none;
 }
 
