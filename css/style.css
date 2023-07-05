@@ -141,6 +141,7 @@ main.post{
 .featured-work-item a img{
 	max-height: 200px;
 	width: auto;
+	min-width: 356px;
 	border-radius: 8px;
 }
 
