@@ -1,4 +1,4 @@
-const lightCollection = document.querySelectorAll("body, header, main, footer, a, td, .toggle-dark-mode");
+const lightCollection = document.querySelectorAll("*");
 const toggle_dark_mode = document.querySelector(".toggle-dark-mode");
 
 var dark_mode = false;

@@ -79,7 +79,7 @@ header{
 	align-items: center;
 }
 
-.section_title{
+.section-title{
 	font-size: 20px;
 	font-weight: 300;
 }
@@ -224,6 +224,28 @@ img{
 	padding: 5px;
 }
 
+.top{
+	text-align: right;
+}
+
+section p{
+	text-align: justify;
+}
+
+a{
+	color: black;
+	font-family: 'Roboto', sans-serif;
+	text-decoration-line: none;
+}
+
+a:hover{
+	text-decoration-line: underline;
+}
+
+hr{
+	border: 1px solid #E0E0E0;
+}
+
 .toggle-dark-mode{
 	width: 20px;
 	height: 20px;
@@ -245,42 +267,32 @@ img{
 }
 
 .dark-mode{
-	background-color: #353535;
+	background-color: #262626;
 	color:  #eeeeee;
 }
 
-main.dark-mode{
-	background-color: #262626;
+.recent-posts-main.dark-mode{
+	background-color: #353535;
 }
 
-header.dark-mode{
-	background-color: #262626;
+.recent-posts-header.dark-mode{
+	background-color: #353535;
 }
 
-footer.dark-mode{
-	background-color: #262626;
+.recent-posts-header .section-title.dark-mode{
+	background-color: #353535;
+}
+
+.view-all.dark-mode{
+	background-color: #353535;
+}
+
+.recent-posts.dark-mode{
+	background-color: #353535;
 }
 
 .toggle-dark-mode.dark-mode{
 	background-color: #151515;
-}
-
-.top{
-	text-align: right;
-}
-
-section p{
-	text-align: justify;
-}
-
-a{
-	color: black;
-	font-family: 'Roboto', sans-serif;
-	text-decoration-line: none;
-}
-
-a:hover{
-	text-decoration-line: underline;
 }
 
 a.dark-mode{
@@ -289,8 +301,4 @@ a.dark-mode{
 
 td.dark-mode{
 	background-color: #151515;
-}
-
-hr{
-	border: 1px solid #E0E0E0;
 }
