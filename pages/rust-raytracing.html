@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang = "en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Portfolio Page.">
+	<title>
+		Blackblood
+	</title>
+	
+	<link rel="icon" type="image/jpg" href="../imgs/page-icon.jpg" />
+	<link rel="stylesheet" href="../css/style.css" />
+	<script src="https://kit.fontawesome.com/b6bfb0c6c4.js" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+</head>
+<body>
+	<div class="container">
+		<header>
+			<div class="top">
+				<a href="../index.html">Home</a>
+				<a href="blog.html">Blog</a>
+				<a href="contact.html">Contact</a>
+				<div class="toggle-dark-mode">
+					<i class="far fa-sun"></i>
+				</div>
+			</div>
+		</header>
+
+		<main class="post">
+			<h1>Raytracing</h1>
+			<nav>
+				<ul>
+					<li>
+						<a href="#metal-fuzz">Metal Fuzziness Property.</a>
+					</li>
+					<li>
+						<a href="#refraction">Refraction Index.</a>
+					</li>
+					<li>
+						<a href="#point-light">Point Light Render.</a>
+					</li>
+					<li>
+						<a href="../index.html">Back.
+							<i class="fa-solid fa-share fa-flip-horizontal"></i>
+						</a>
+					</li>
+				</ul>
+			</nav>
+			<hr>
+			<section>
+				<h2 id="metal-fuzz">Metal Fuzziness Property Variation.</h2>
+				<p> Here we see the effects of varying the material roughness in metal surfaces. On the left we have a lower fuziness with a more polished look and on the right we have a higher fuziness, more rough and blurry metal.</p>
+				
+				<figure>
+					<img src =  "../imgs/raytracing/Reflection.png" alt = "Raytracing render." style="width:100%;"/>
+					<figcaption>
+						Raytracing render with varying material roughness.
+					</figcaption>
+				</figure>
+
+				<figure>
+					<img src =  "../imgs/raytracing/MetalPortal.png" alt = "Raytracing render." style="width:100%;"/>
+					<figcaption>
+						Raytracing render with varying <b>Metal Fuziness</b> and central portal.
+					</figcaption>
+				</figure>
+
+				<p>It looks good, let's see it animated.</p>
+				<iframe width="478" height="849" src="https://www.youtube.com/embed/ZTyvTwKOqvE?version=3&loop=1&playlist=ZTyvTwKOqvE" title="Raytracing - Spin Portal A" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+			</section>
+			<hr>
+			<section>
+				<h2 id="refraction">Refractive Index Variation.</h2>
+				<p> Here we see the effects of varying the <b>refractive index</b> in glassy materials. On the left the index is closer to 1.0, the air index, on the right it approximates 2.42, which is diamond.</p>
+				
+				<figure>
+					<img src =  "../imgs/raytracing/Refraction.png" alt = "Raytracing render." style="width:100%;"/>
+					<figcaption>
+						Raytracing render with varying refractive indexes.
+					</figcaption>
+				</figure>
+
+				<figure>
+					<img src =  "../imgs/raytracing/GlassPortal.png" alt = "Raytracing render." style="width:100%;"/>
+					<figcaption>
+						Raytracing render with varying refractive indexes.
+					</figcaption>
+				</figure>
+
+				<p>Now animated.</p>
+				<iframe width="478" height="849" src="https://www.youtube.com/embed/-Ez1jk0A9Hc?version=3&loop=1&playlist=-Ez1jk0A9Hc" title="Raytracing - Spin portal B" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+			</section>
+			<hr>
+			<section>
+				<h2 id="point-light">Point Lights.</h2>
+				<p> Raytracing render using <b>point light</b> sources.</p>
+
+				<figure>
+					<img src =  "../imgs/raytracing/PointLight.png" alt = "Raytracing render." style="width:100%;"/>
+					<figcaption>
+						Raytracing render using <b>point light</b> sources.
+					</figcaption>
+				</figure>
+
+				<p>We will leave you with a little extra, a focus blur animation.</p>
+				<iframe width="478" height="849" src="https://www.youtube.com/embed/cH0VB3jkGls?version=3&loop=1&playlist=cH0VB3jkGls" title="Raytracing focus blur" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+			</section>
+		</main>
+
+		<footer>
+			<div class="footer-main">
+				<hr>
+				<a href="../index.html">
+					<p class="page-name"><b>Blackblood</b></p>
+				</a>
+				<a href="https://github.com/davidfrk" target="_blank">
+					<div class="author">
+						<i class="devicon-github-original colored"></i>
+						<p>by David A.</p>
+					</div>
+				</a>
+			</div>
+		</footer>
+	</div>
+	<script src="../scripts/dark-mode.js"></script>
+</body>
+</html>
