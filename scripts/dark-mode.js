@@ -18,13 +18,15 @@ function setTheme(dark){
 			element.classList.add("dark-mode");
 		}
 		toggle_dark_mode.firstElementChild.className="far fa-moon";
-		document.cookie = "theme=dark";
+		//document.cokie = "theme=dark; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+		document.cookie = "theme=dark; path=/";
 	}else{
 		for (const element of lightCollection){
 			element.classList.remove("dark-mode");
 		}
 		toggle_dark_mode.firstElementChild.className="far fa-sun";
-		document.cookie = "theme=light";
+		//document.cokie = "theme=light; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+		document.cookie = "theme=light; path=/";
 	}
 	let allcookies = document.cookie;
 	console.log(allcookies);
