@@ -35,7 +35,7 @@ header{
 	margin-bottom: 20px;
 }
 
-.intro_main{
+.intro-main{
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -43,7 +43,16 @@ header{
 	margin: 120px;
 }
 
-.open_resume{
+.contact{
+	font-size: 20px;
+}
+
+.contact h2 {
+	font-size: 40px;
+	margin-bottom: 20px;
+}
+
+.open-resume{
 	width: 208px;
 	height: 47px;
 	border-radius: 2px;
@@ -56,14 +65,14 @@ header{
 	float: left;
 }
 
-.recent_posts_main{
+.recent-posts-main{
 	background-color: #EDF7FA;
 	padding: 20px;
 	padding-left: 120px;
 	padding-right: 120px;
 }
 
-.recent_posts_header{
+.recent-posts-header{
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
@@ -75,17 +84,17 @@ header{
 	font-weight: 300;
 }
 
-.view_all{
+.view-all{
 	color: #00A8CC;
 	text-align: right;
 }
 
-.view_all:hover{
+.view-all:hover{
 	text-decoration-color: #00A8CC;
 	text-decoration-line: underline;
 }
 
-.recent_posts{
+.recent-posts{
 	margin-top: 20px;
 	display: flex;
 	flex-direction: row;
@@ -94,24 +103,24 @@ header{
 	justify-content: center;
 }
 
-.recent_post_item{
+.recent-post-item{
 	background-color: white;
 	padding: 15px;
 }
 
-.post_data{
+.post-data{
 	margin-top: 20px;
 	margin-bottom: 20px;
 }
 
-.featured_works_main{
+.featured-works-main{
 	background-color: white;
 	padding: 20px;
 	padding-left: 120px;
 	padding-right: 120px;
 }
 
-.featured_work_item{
+.featured-work-item{
 	margin-top: 20px;
 	margin-bottom: 20px;
 	display: flex;
@@ -121,27 +130,27 @@ header{
 	justify-content: left;
 }
 
-.featured_work_item > a > img{
+.featured-work-item a img{
 	max-height: 200px;
 	width: auto;
 	border-radius: 8px;
 }
 
-a > img:hover {
+a img:hover{
 	box-shadow: 0 0 3px 2px rgba(0, 140, 186, 0.5);
 }
 
-.container {
-    min-height:100%;
+.container{
+    min-height:100vh;
     position:relative;
 }
 
-footer {
+footer{
 	padding-bottom: 80px;
 	min-height: 100%;
 }
 
-.footer_main {
+.footer-main{
 	position: absolute;
 	bottom: 0;
 	width: 100%;
@@ -149,6 +158,15 @@ footer {
 	background-color: white;
 	font-family: 'Roboto', sans-serif;
 	text-align: center;
+}
+
+.author{
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
+	font-size: 18px;
 }
 
 iframe{

@@ -11,6 +11,7 @@
 	<link rel="icon" type="image/jpg" href="imgs/page-icon.jpg" />
 	<link rel="stylesheet" href="css/style.css" />
 	<script src="https://kit.fontawesome.com/b6bfb0c6c4.js" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
 </head>
 <body>
 	<div class="container">
@@ -18,53 +19,53 @@
 			<div class="top">
 				<a href="index.html">Home</a>
 				<a>Blog</a>
-				<a>Contact</a>
+				<a href="contact.html">Contact</a>
 				<div class="toggle-dark-mode">
 					<i class="far fa-sun"></i>
 				</div>
 			</div>
 
-			<div class="intro_main">
+			<div class="intro-main">
 				<section class="intro">
 					<h2>Oi, tudo bem? Sou David Andrade,</h2>
 					<p><strong> desenvolvedor</strong> amante de matemática, lógica e queijo com goiabada. Vivo em Minas Gerais, Brasil. Onde as montanhas, tão altas, combrem-se brancas. Onde a terra, tão vermelha, sangra ouro.</p>
 					<p>Uai. Acha que é mágica?</p>
 					<p>Mágica são palavras ditas, escritas, palavras que a realidade escuta e o mundo executa. Bilhões de consequências. <s>Todas ao pé da letra...</s></p>
 					<p>Então, programador, mago sou!</p>
-					<button onclick="window.open('files/Currículo_David_Andrade.pdf')" class="open_resume">Ver Currículo</button>
+					<button onclick="window.open('files/Currículo_David_Andrade.pdf')" class="open-resume">Ver Currículo</button>
 				</section>
-				<img class="profile_picture" src = "imgs/ProfilePicture.svg" alt = "Profile Picture."/>
+				<img class="profile-picture" src = "imgs/ProfilePicture.svg" alt = "Profile Picture."/>
 			</div>
 		</header>
 
 		<main>
-			<div class="recent_posts_main">
-				<div class="recent_posts_header">
-					<p class="section_title">Recent posts</p>
-					<a><p class="view_all">View all</p></a>
+			<div class="recent-posts-main">
+				<div class="recent-posts-header">
+					<p class="section-title">Recent posts</p>
+					<a><p class="view-all">View all</p></a>
 				</div>
-				<div class="recent_posts">
-					<section class="recent_post_item">
+				<div class="recent-posts">
+					<section class="recent-post-item">
 						<h2>Prisoner's Dilemma</h2>
-						<div class="post_data">
+						<div class="post-data">
 							<p>04 July 2023 | bash, Unix</p>
 						</div>
 						<p>Challenge independent agents in the infamous prisoner's dilemma.</p>
 						<p>Here we developed a bash script to allow you to run your own competition.</p>
 						<p>Make sure it's not too bloody.</p>
 					</section>
-					<section class="recent_post_item">
+					<section class="recent-post-item">
 						<h2>Prisoner's Dilemma</h2>
-						<div class="post_data">
+						<div class="post-data">
 							<p>04 July 2023 | bash, Unix</p>
 						</div>
 						<p>Challenge independent agents in the infamous prisoner's dilemma.</p>
 						<p>Here we developed a bash script to allow you to run your own competition.</p>
 						<p>Make sure it's not too bloody.</p>
 					</section>
-					<section class="recent_post_item">
+					<section class="recent-post-item">
 						<h2>Prisoner's Dilemma</h2>
-						<div class="post_data">
+						<div class="post-data">
 							<p>04 July 2023 | bash, Unix</p>
 						</div>
 						<p>Challenge independent agents in the infamous prisoner's dilemma.</p>
@@ -75,29 +76,29 @@
 				</div>
 			</div>
 
-			<div class="featured_works_main">
-				<p class="section_title">Featured Works</p>
-				<div class="featured_works">
+			<div class="featured-works-main">
+				<p class="section-title">Featured Works</p>
+				<div class="featured-works">
 
 					<div>
-						<div class="featured_work_item">
+						<div class="featured-work-item">
 							<section>
-								<a href="rust_raytracing.html"><h2>Raytracing</h2></a>
-								<div class="post_data">
+								<a href="rust-raytracing.html"><h2>Raytracing</h2></a>
+								<div class="post-data">
 									<p>05 July 2023 | Rust, Render, Computer Graphics</p>
 								</div>
 								<p>Ray Tracing renderer made in Rust.</p>
 							</section>
-							<a href="rust_raytracing.html"><img src="imgs/raytracing/Refraction.png" alt="Ray tracing redenr image."/></a>
+							<a href="rust-raytracing.html"><img src="imgs/raytracing/Refraction.png" alt="Ray tracing redenr image."/></a>
 						</div>
 						<hr>
 					</div>
 
 					<div>
-						<div class="featured_work_item">
+						<div class="featured-work-item">
 							<section>
 								<a href="unity.html"><h2>Unity Projects</h2></a>
-								<div class="post_data">
+								<div class="post-data">
 									<p>05 July 2023 | Rust, Render, Computer Graphics</p>
 								</div>
 								<p>Cool game-engine projects for you.</p>
@@ -108,10 +109,10 @@
 					</div>
 
 					<div>
-						<div class="featured_work_item">
+						<div class="featured-work-item">
 							<section>
 								<a href="experimental.html"><h2>Experimental Page</h2></a>
-								<div class="post_data">
+								<div class="post-data">
 									<p>05 July 2023 | Rust, Render, Computer Graphics</p>
 								</div>
 								<p>Find and experiment with new features.</p>
@@ -126,12 +127,17 @@
 		</main>
 
 		<footer>
-			<div class="footer_main">
+			<div class="footer-main">
 				<hr>
 				<a href="index.html">
 					<p class="page-name"><b>Blackblood</b></p>
 				</a>
-				<p>by David A.</p>
+				<a href="https://github.com/davidfrk" target="_blank">
+					<div class="author">
+						<i class="devicon-github-original colored"></i>
+						<p>by David A.</p>
+					</div>
+				</a>
 			</div>
 		</footer>
 	</div>
