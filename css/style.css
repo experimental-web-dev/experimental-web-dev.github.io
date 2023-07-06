@@ -81,7 +81,7 @@ header{
 }
 
 .section-title{
-	font-size: 20px;
+	font-size: 25px;
 	font-weight: 300;
 }
 
@@ -278,28 +278,35 @@ hr{
 }
 
 .toggle-dark-mode{
-	width: 20px;
-	height: 20px;
-	background-color: #eee8e1;
+	width: 30px;
+	height: 30px;
+	background-color: white;
 
-	display: grid;
+	display: flex;
 	place-items: center;
+	justify-content: center;
 	border-radius: 50%;
 	cursor:  pointer;
 }
 
-.toggle-dark-mode i{
-	font-size:  20px;
-	color:  #202020;
+.dark-mode-icon{
+	width: 30px;
+	height: 30px;
 }
 
-.toggle-dark-mode.dark-mode i{
-	color:  #777;
+.dark-mode-icon.dark-mode{
+	width: 20px;
+	height: 20px;
+	background-color: #151515;
 }
 
 .dark-mode{
 	background-color: #262626;
 	color:  #eeeeee;
+}
+
+.toggle-dark-mode.dark-mode{
+	background-color: #151515;
 }
 
 .recent-posts-main.dark-mode{
@@ -320,10 +327,6 @@ hr{
 
 .recent-posts.dark-mode{
 	background-color: #353535;
-}
-
-.toggle-dark-mode.dark-mode{
-	background-color: #151515;
 }
 
 a.dark-mode{
