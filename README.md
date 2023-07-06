@@ -1,6 +1,10 @@
 # experimental-web-dev.github.io
 
+Portfolio/Landing Page by David A.
+
 ## Thanks
+
+- [Figma](https://www.figma.com)
 
 ### Page Icons
 
