@@ -349,3 +349,36 @@ a.dark-mode{
 td.dark-mode{
 	background-color: #151515;
 }
+
+@media screen and (max-width: 992px){
+	.intro-main{
+		flex-direction: column-reverse;
+		margin-left: 30px;
+		margin-right: 30px;
+	}
+
+	.recent-posts-main{
+		padding-left: 30px;
+		padding-right: 30px;
+	}
+
+	.recent-posts{
+		flex-direction: column;
+	}
+
+	.featured-works-main{
+		padding-left: 30px;
+		padding-right: 30px;
+	}
+
+	main.post{
+		margin-left: 30px;
+		margin-right: 30px;
+	}
+}
+
+@media screen and (max-width: 700px){
+	.featured-work-item{
+		flex-direction: column;
+	}
+}
