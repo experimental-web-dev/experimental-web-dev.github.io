@@ -64,6 +64,19 @@ header{
 	color: #FFF;
 	margin-top: 30px;
 	float: left;
+	transition-duration: 0.4s;
+}
+
+.open-resume:hover{
+	background: var(--primary, white);
+	color: black;
+	box-shadow: 0 0 2px 2px black;
+}
+
+.open-resume.dark-mode:hover{
+	background-color: #E0E0E0;
+	color:black;
+	box-shadow: 0 0 0px 0px black;
 }
 
 .recent-posts-main{
