@@ -22,6 +22,11 @@ header{
 	text-align: center;
 }
 
+canvas{
+	width: 500px;
+	height: 500px;
+}
+
 .top{
 	display: flex;
 	flex-direction: row;
