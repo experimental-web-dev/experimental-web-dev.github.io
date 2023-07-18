@@ -2,12 +2,12 @@
   "name": "experimental-web-dev",
   "version": "0.1.0",
   "description": "experimental",
-  "main": "index.html",
+  "main": "src/main.ts",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build --config vite.config.github.js && npm run copy-resources",
     "preview": "vite preview",
-    "copy-resources": "xcopy /s /y scripts\\* dist\\scripts\\ && xcopy /s /y audio\\* dist\\audio\\ && xcopy /s /y imgs\\* dist\\imgs\\"
+    "copy-resources": "xcopy /s /y scripts\\* dist\\scripts\\ && xcopy /s /y audio\\* dist\\audio\\ && xcopy /s /y imgs\\* dist\\imgs\\ && xcopy /s /y files\\* dist\\files\\"
   },
   "devDependencies": {
     "@types/dom-webcodecs": "^0.1.8",

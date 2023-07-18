@@ -11,11 +11,17 @@ for(let file of samples){
         input[file.slice(0, -5)] = resolve(__dirname, 'pages/'+ file)
 }
 
+const css = fs.readdirSync(resolve(__dirname, 'css'))
+for(let file of css){
+    if(file.endsWith('.css'))
+        input[file.slice(0, -5)] = resolve(__dirname, 'css/'+ file)
+}
+
 module.exports = defineConfig({
     base: '/',
     build: {
         rollupOptions: {
-            input
+            input,
         }
     }
 })
