@@ -94,7 +94,7 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
     // create a mvp matrix buffer
     const mvpBuffer = device.createBuffer({
         label: 'GPUBuffer store 4x4 matrix',
-        size: 4 * 4 * 4, // 4 x 4 x float32
+        size: 4 * 4 * 4 + 4 * 4, // 4 x 4 x float32 plus 4 * float32 (time)
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     })
     // create a uniform group for Matrix
@@ -110,6 +110,7 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
             }
         ]
     })
+
     // return all vars
     return { pipeline, vertexBuffer, mvpBuffer, uniformGroup, depthTexture, depthView }
 }
@@ -150,6 +151,7 @@ function draw(
     passEncoder.setVertexBuffer(0, pipelineObj.vertexBuffer)
     // set uniformGroup
     passEncoder.setBindGroup(0, pipelineObj.uniformGroup)
+    //passEncoder.setBindGroup(0, pipelineObj.uniformFragGroup)
     // draw vertex count of cube
     passEncoder.draw(cube.vertexCount)
     passEncoder.end()
@@ -169,16 +171,24 @@ async function run(){
     const scale = {x:1, y:1, z:1}
     const rotation = {x: 0, y: 0, z:0}
     // start loop
+    const startTime = Date.now()
     function frame(){
         // rotate by time, and update transform matrix
-        const now = Date.now() / 1000
-        rotation.x = Math.sin(now)
-        rotation.y = Math.cos(now)
+        const now = (Date.now() - startTime) / 1000
+        rotation.x = Math.sin(now / 2.0)
+        rotation.y = Math.cos(now / 2.0)
         const mvpMatrix = getMvpMatrix(aspect, position, rotation, scale)
+        const time = new Float32Array([now, now, now, now])
         device.queue.writeBuffer(
             pipelineObj.mvpBuffer,
             0,
             mvpMatrix.buffer
+        )
+        
+        device.queue.writeBuffer(
+            pipelineObj.mvpBuffer,
+            4 * 4 * 4,
+            time
         )
         // then draw
         draw(device, context, pipelineObj)
