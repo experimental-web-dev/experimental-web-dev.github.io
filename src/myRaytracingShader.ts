@@ -93,27 +93,27 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
     })
     device.queue.writeBuffer(vertexBuffer, 0, cube.vertex)
     // create a mvp matrix buffer
-    const mvpBuffer = device.createBuffer({
-        label: 'GPUBuffer store 4x4 matrix',
-        size: 4 * 4 * 4 + 4 * 4, // 4 x 4 x float32 plus 4 * float32 (time)
+    const infoBuffer = device.createBuffer({
+        label: 'Render Info as hight/witdth and time',
+        size: 4 * 4, // 4 x float32
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     })
     // create a uniform group for Matrix
     const uniformGroup = device.createBindGroup({
-        label: 'Uniform Group with Matrix',
+        label: 'Uniform Group',
         layout: pipeline.getBindGroupLayout(0),
         entries: [
             {
                 binding: 0,
                 resource: {
-                    buffer: mvpBuffer
+                    buffer: infoBuffer
                 }
             }
         ]
     })
 
     // return all vars
-    return { pipeline, vertexBuffer, mvpBuffer, uniformGroup, depthTexture, depthView }
+    return { pipeline, vertexBuffer, infoBuffer, uniformGroup, depthTexture, depthView }
 }
 
 // create & submit device commands
@@ -123,7 +123,7 @@ function draw(
     pipelineObj: {
         pipeline: GPURenderPipeline
         vertexBuffer: GPUBuffer
-        mvpBuffer: GPUBuffer
+        infoBuffer: GPUBuffer
         uniformGroup: GPUBindGroup
         depthView: GPUTextureView
     }
@@ -168,27 +168,18 @@ async function run(){
     const pipelineObj = await initPipeline(device, format, size)
     // default state
     let aspect = size.width/ size.height
-    const position = {x:0, y:0, z: 0}
-    const scale = {x:1, y:1, z:1}
-    const rotation = {x: 0, y: 0, z:0}
     // start loop
     const startTime = Date.now()
     function frame(){
         // rotate by time, and update transform matrix
         const now = (Date.now() - startTime) / 1000
-        const mvpMatrix = getMvpMatrix(aspect, position, rotation, scale)
-        const time = new Float32Array([now, now, now, now])
+        const time = new Float32Array([now, aspect, size.width, size.height])
         device.queue.writeBuffer(
-            pipelineObj.mvpBuffer,
+            pipelineObj.infoBuffer,
             0,
-            mvpMatrix.buffer
-        )
-        
-        device.queue.writeBuffer(
-            pipelineObj.mvpBuffer,
-            4 * 4 * 4,
             time
         )
+
         // then draw
         draw(device, context, pipelineObj)
         requestAnimationFrame(frame)

@@ -1,4 +1,4 @@
-@binding(0) @group(0) var<uniform> mvpMatrix : mat4x4<f32>;
+@binding(0) @group(0) var<uniform> info : vec4<f32>;
 
 struct VertexOutput {
     @builtin(position) Position : vec4<f32>,

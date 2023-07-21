@@ -1,4 +1,4 @@
-@binding(0) @group(0) var<uniform> abc : array<vec4<f32>, 5>;
+@binding(0) @group(0) var<uniform> info : vec4<f32>;
 
 fn palette(t:f32) -> vec3<f32>{
     let a = vec3<f32>(0.5, 0.5, 0.5);
@@ -146,10 +146,13 @@ fn main(
 ) -> @location(0) vec4<f32> {
     var uv = fragUV * 2.0 - 1.0;
     let uv0 = uv;
-    let time = 2.0 * abc[4][0];
+    let time = 1.0 * info[0];
+    let aspect_ratio = info[1];
+    let width = info[2];
+    let height = info[3];
     var finalColor = vec3<f32>(0.0);
 
-    let camera = create_camera(vec3(0.0, 0.0, -5.0), vec3(0.0, 0.0, 0.0), 90.0);
+    let camera = create_camera(vec3(30.0 * sin(time), 1.0, 30.0 * cos(time)), vec3(0.0, 0.0, 0.0), 120.0);
 
     let spheres:array<Sphere, 3> = array<Sphere, 3>(
         Sphere(vec3(0.0, 0.0, 0.0), 1.0, u32(0)),
@@ -157,7 +160,11 @@ fn main(
         Sphere(vec3(0.0, 3.0, 15.0), 10.0, u32(2)),
     );
 
-    let ray = Ray(camera.position, normalize(camera.forward + uv.x * camera.right + uv.y * camera.up));
+    // Many possible otimizations here, not the time yet
+    let fov = tan(camera.fov / 180.0 * 3.1514 / 2.0);
+    let x = fov * uv.x * (width / 2.0) / width;
+    let y = fov * uv.y * (height / 2.0) / width;
+    let ray = Ray(camera.position, normalize(camera.forward + x * camera.right + y * camera.up));
 
     return vec4(cast_raytracing(spheres, 3u, ray), 0.0);
 }
