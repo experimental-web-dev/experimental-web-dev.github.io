@@ -1,5 +1,3 @@
-@binding(0) @group(0) var<uniform> info : vec4<f32>;
-
 struct VertexOutput {
     @builtin(position) Position : vec4<f32>,
     @location(0) fragUV : vec2<f32>,
@@ -15,5 +13,6 @@ fn main(
     output.Position = position;
     output.fragUV = uv;
     output.fragPosition = position;
+    
     return output;
 }

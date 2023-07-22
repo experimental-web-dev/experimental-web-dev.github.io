@@ -1,4 +1,10 @@
-@binding(0) @group(0) var<uniform> info : vec4<f32>;
+@group(0) @binding(0) var<uniform> info : vec4<f32>;
+@group(0) @binding(1) var<uniform> u_info : vec4<u32>;
+@group(0) @binding(2) var<uniform> sky_gradient : array<vec4<f32>, 2>;
+@group(0) @binding(3) var<uniform> spheres_array : array<Sphere, 100>;
+@group(0) @binding(4) var<uniform> materials_array : array<Material, 100>;
+@group(0) @binding(5) var<uniform> camera_setup : Camera;
+//[[group(0), binding(5), minBufferBindingSize(80)]] var<uniform> camera_setup : Camera;
 
 fn palette(t:f32) -> vec3<f32>{
     let a = vec3<f32>(0.5, 0.5, 0.5);
@@ -12,16 +18,20 @@ fn palette(t:f32) -> vec3<f32>{
 struct Sphere{
     position:vec3<f32>,
     radius:f32,
-    obj_id:u32,
+    obj_id:f32,
+}
+
+struct Material{
+    albedo:vec3<f32>,
 }
 
 struct Camera{
     position:vec3<f32>,
     look_target:vec3<f32>,
-    forward:vec3<f32>,
     up:vec3<f32>,
+    forward:vec3<f32>,
     right:vec3<f32>,
-    fov:f32,
+    fov:f32
 }
 
 struct Ray{
@@ -55,9 +65,10 @@ fn create_camera(position:vec3<f32>, look_target:vec3<f32>, fov:f32) -> Camera{
     return camera;
 }
 
-fn intersect_sphere(sphere:Sphere, ray:Ray) -> Hit {
+fn intersect_sphere(id:u32, ray:Ray) -> Hit {
     var hit:Hit;
     hit.did_hit = false;
+    let sphere = spheres_array[id];
 
     let origin_to_center = sphere.position - ray.origin;
     let proj_length = dot(origin_to_center, ray.direction);
@@ -101,17 +112,17 @@ fn intersect_sphere(sphere:Sphere, ray:Ray) -> Hit {
     hit.hit_data.norm = norm;
     hit.hit_data.inside = inside;
     hit.hit_data.distance = distance;
-    hit.hit_data.obj_id = sphere.obj_id;
+    hit.hit_data.obj_id = id;
     return hit;
 }
 
-fn ray_cast(spheres:array<Sphere, 3>, sphere_count:u32, ray:Ray) -> Hit{
+fn ray_cast(sphere_count:u32, ray:Ray) -> Hit{
     var hit:Hit;
     hit.did_hit = false;
     var closest_distance:f32 = 10000.0;
 
     for (var i = 0u; i < sphere_count; i = i + 1u){
-        let current_hit = intersect_sphere(spheres[i], ray);
+        let current_hit = intersect_sphere(i, ray);
         if current_hit.did_hit && current_hit.hit_data.distance < closest_distance{
             hit = current_hit;
             closest_distance = hit.hit_data.distance;
@@ -120,8 +131,8 @@ fn ray_cast(spheres:array<Sphere, 3>, sphere_count:u32, ray:Ray) -> Hit{
     return hit;
 }
 
-fn cast_raytracing(spheres:array<Sphere, 3>, sphere_count:u32, ray:Ray) -> vec3<f32>{
-    let hit = ray_cast(spheres, sphere_count, ray);
+fn cast_raytracing(sphere_count:u32, ray:Ray) -> vec3<f32>{
+    let hit = ray_cast(sphere_count, ray);
 
     if hit.did_hit {
         return compute_direct_illumination(hit.hit_data);
@@ -131,12 +142,13 @@ fn cast_raytracing(spheres:array<Sphere, 3>, sphere_count:u32, ray:Ray) -> vec3<
 }
 
 fn compute_direct_illumination(hit_data:HitData) -> vec3<f32>{
-    return hit_data.norm;
+    return materials_array[hit_data.obj_id].albedo * hit_data.norm;
 }
 
 fn skybox(ray:Ray) -> vec3<f32>{
     let t = ray.direction.y;
-    return t * vec3(0.67, 0.84, 0.97) + (1.0 - t) * vec3(0.57, 0.63, 0.70);
+    //return t * vec3(0.67, 0.84, 0.97) + (1.0 - t) * vec3(0.57, 0.63, 0.70);
+    return t * sky_gradient[0].xyz + (1.0 - t) * sky_gradient[1].xyz;
 }
 
 @fragment
@@ -152,13 +164,9 @@ fn main(
     let height = info[3];
     var finalColor = vec3<f32>(0.0);
 
-    let camera = create_camera(vec3(30.0 * sin(time), 1.0, 30.0 * cos(time)), vec3(0.0, 0.0, 0.0), 120.0);
-
-    let spheres:array<Sphere, 3> = array<Sphere, 3>(
-        Sphere(vec3(0.0, 0.0, 0.0), 1.0, u32(0)),
-        Sphere(vec3(0.0, 3.0, 0.0), 1.0, u32(1)),
-        Sphere(vec3(0.0, 3.0, 15.0), 10.0, u32(2)),
-    );
+    let camera = create_camera(vec3(30.0 * sin(time), 1.0, 30.0 * cos(time)), camera_setup.look_target, camera_setup.fov);
+    //var camera = create_camera(camera_setup.position, camera_setup.look_target, camera_setup.fov);
+    //camera.position = vec3(30.0 * sin(time), 1.0, 30.0 * cos(time));
 
     // Many possible otimizations here, not the time yet
     let fov = tan(camera.fov / 180.0 * 3.1514 / 2.0);
@@ -166,5 +174,11 @@ fn main(
     let y = fov * uv.y * (height / 2.0) / width;
     let ray = Ray(camera.position, normalize(camera.forward + x * camera.right + y * camera.up));
 
-    return vec4(cast_raytracing(spheres, 3u, ray), 0.0);
+    //let b = spheres_array[0].obj_id;
+    //let id = u32(round(b));
+    let obj_count = u_info[0];
+    let light_count = u_info[1];
+    let f = camera_setup.fov;
+
+    return vec4(cast_raytracing(obj_count, ray), 1.0);
 }

@@ -1,7 +1,7 @@
 import basicVert from './shaders/myRaytracingShader.vert.wgsl?raw'
 import positionFrag from './shaders/myRaytracingShader.frag.wgsl?raw'
 import * as cube from './util/screen'
-import { getMvpMatrix } from './util/math'
+import * as scene from './util/scene'
 
 // initialize webgpu device & config canvas context
 async function initWebGPU(canvas: HTMLCanvasElement) {
@@ -94,10 +94,41 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
     device.queue.writeBuffer(vertexBuffer, 0, cube.vertex)
     // create a mvp matrix buffer
     const infoBuffer = device.createBuffer({
-        label: 'Render Info as hight/witdth and time',
+        label: 'Render info as hight/witdth and time',
         size: 4 * 4, // 4 x float32
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     })
+
+    const uInfoBuffer = device.createBuffer({
+        label: 'Render info as unsigned int',
+        size: 4 * 4, // 4 x uint32
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    })
+
+    const skyGradientBuffer = device.createBuffer({
+        label: 'Sky gradient',
+        size: 2 * 4 * 4, // 2 x 4 x float32
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    })
+
+    const spheresBuffer = device.createBuffer({
+        label: 'Spheres',
+        size: 3200,//scene.scene.spheres.length * scene.sphereByteLength,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    })
+
+    const materialsBuffer = device.createBuffer({
+        label: 'Materials',
+        size: 3200, //scene.scene.materials.length * scene.materialByteLength,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    })
+
+    const cameraBuffer = device.createBuffer({
+        label: 'Camera',
+        size: 80, // n * floats
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    })
+
     // create a uniform group for Matrix
     const uniformGroup = device.createBindGroup({
         label: 'Uniform Group',
@@ -108,12 +139,43 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
                 resource: {
                     buffer: infoBuffer
                 }
-            }
+            },
+            {
+                binding: 1,
+                resource: {
+                    buffer: uInfoBuffer
+                }
+            },
+            {
+                binding: 2,
+                resource: {
+                    buffer: skyGradientBuffer
+                }
+            },
+            {
+                binding: 3,
+                resource: {
+                    buffer: spheresBuffer
+                }
+            },
+            {
+                binding: 4,
+                resource: {
+                    buffer: materialsBuffer
+                }
+            },
+            {
+                binding: 5,
+                resource: {
+                    buffer: cameraBuffer
+                }
+            },
         ]
     })
 
     // return all vars
-    return { pipeline, vertexBuffer, infoBuffer, uniformGroup, depthTexture, depthView }
+    return { pipeline, vertexBuffer, infoBuffer, uInfoBuffer, skyGradientBuffer, spheresBuffer, materialsBuffer,
+        cameraBuffer, uniformGroup, depthTexture, depthView }
 }
 
 // create & submit device commands
@@ -124,6 +186,11 @@ function draw(
         pipeline: GPURenderPipeline
         vertexBuffer: GPUBuffer
         infoBuffer: GPUBuffer
+        uInfoBuffer: GPUBuffer
+        skyGradientBuffer: GPUBuffer
+        spheresBuffer: GPUBuffer
+        materialsBuffer: GPUBuffer
+        cameraBuffer: GPUBuffer
         uniformGroup: GPUBindGroup
         depthView: GPUTextureView
     }
@@ -152,7 +219,6 @@ function draw(
     passEncoder.setVertexBuffer(0, pipelineObj.vertexBuffer)
     // set uniformGroup
     passEncoder.setBindGroup(0, pipelineObj.uniformGroup)
-    //passEncoder.setBindGroup(0, pipelineObj.uniformFragGroup)
     // draw vertex count of cube
     passEncoder.draw(cube.vertexCount)
     passEncoder.end()
@@ -173,11 +239,43 @@ async function run(){
     function frame(){
         // rotate by time, and update transform matrix
         const now = (Date.now() - startTime) / 1000
-        const time = new Float32Array([now, aspect, size.width, size.height])
+        const info = new Float32Array([now, aspect, size.width, size.height])
+        const uInfo = new Uint32Array([scene.scene.spheres.length, scene.scene.lightCount])
+
         device.queue.writeBuffer(
             pipelineObj.infoBuffer,
             0,
-            time
+            info
+        )
+
+        device.queue.writeBuffer(
+            pipelineObj.uInfoBuffer,
+            0,
+            uInfo
+        )
+
+        device.queue.writeBuffer(
+            pipelineObj.skyGradientBuffer,
+            0,
+            scene.getSkyGradient()
+        )
+        
+        device.queue.writeBuffer(
+            pipelineObj.spheresBuffer,
+            0,
+            scene.getSpheres()
+        )
+
+        device.queue.writeBuffer(
+            pipelineObj.materialsBuffer,
+            0,
+            scene.getMaterials()
+        )
+
+        device.queue.writeBuffer(
+            pipelineObj.cameraBuffer,
+            0,
+            scene.getCamera()
         )
 
         // then draw
