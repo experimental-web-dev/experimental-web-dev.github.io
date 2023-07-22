@@ -119,7 +119,13 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
 
     const materialsBuffer = device.createBuffer({
         label: 'Materials',
-        size: 3200, //scene.scene.materials.length * scene.materialByteLength,
+        size: 4800, //scene.scene.materials.length * scene.materialByteLength,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    })
+
+    const lightsBuffer = device.createBuffer({
+        label: 'Lights',
+        size: 4800, //scene.scene.lights.length * scene.lightByteLength,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     })
 
@@ -167,6 +173,12 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
             {
                 binding: 5,
                 resource: {
+                    buffer: lightsBuffer
+                }
+            },
+            {
+                binding: 6,
+                resource: {
                     buffer: cameraBuffer
                 }
             },
@@ -175,7 +187,7 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
 
     // return all vars
     return { pipeline, vertexBuffer, infoBuffer, uInfoBuffer, skyGradientBuffer, spheresBuffer, materialsBuffer,
-        cameraBuffer, uniformGroup, depthTexture, depthView }
+        lightsBuffer, cameraBuffer, uniformGroup, depthTexture, depthView }
 }
 
 // create & submit device commands
@@ -190,6 +202,7 @@ function draw(
         skyGradientBuffer: GPUBuffer
         spheresBuffer: GPUBuffer
         materialsBuffer: GPUBuffer
+        lightsBuffer: GPUBuffer
         cameraBuffer: GPUBuffer
         uniformGroup: GPUBindGroup
         depthView: GPUTextureView
@@ -240,7 +253,7 @@ async function run(){
         // rotate by time, and update transform matrix
         const now = (Date.now() - startTime) / 1000
         const info = new Float32Array([now, aspect, size.width, size.height])
-        const uInfo = new Uint32Array([scene.scene.spheres.length, scene.scene.lightCount])
+        const uInfo = new Uint32Array([scene.scene.spheres.length, scene.scene.lights.length])
 
         device.queue.writeBuffer(
             pipelineObj.infoBuffer,
@@ -270,6 +283,12 @@ async function run(){
             pipelineObj.materialsBuffer,
             0,
             scene.getMaterials()
+        )
+
+        device.queue.writeBuffer(
+            pipelineObj.lightsBuffer,
+            0,
+            scene.getLights()
         )
 
         device.queue.writeBuffer(

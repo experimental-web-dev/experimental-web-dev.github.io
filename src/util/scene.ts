@@ -1,7 +1,6 @@
 let scene = {
     skyGradient_1: {x: 0.67, y: 0.84, z: 0.97},
     skyGradient_2: {x: 0.57, y: 0.63, z: 0.70},
-    lightCount: 0,
     camera: {
         position: {x: 0.0, y: 0.0, z: -50.0},
         lookAtTarget: {x: 0.0, y: 0.0, z: 0.0},
@@ -10,6 +9,22 @@ let scene = {
         right: {x: 1.0, y: 0.0, z: 0.0},
         fov: 120.0,
     },
+    lights: [
+        {
+            position: {x: 0.0, y: 10.0, z: 0.0},
+            radius: 0.1,
+            color: {r: 1.0, g: 1.0, b: 1.0},
+            intensity: 2.0,
+            fallout: {c1: 0.1, c2: 0.01}, //companion constants to linear and quadratic terms
+        },
+        {
+            position: {x: 0.0, y: -5.0, z: 0.0},
+            radius: 0.1,
+            color: {r: 1.0, g: 1.0, b: 1.0},
+            intensity: 0.0,
+            fallout: {c1: 0.0, c2: 0.0}, //companion constants to linear and quadratic terms
+        }
+    ],
     spheres: [
         {
             position: {x: 0.0, y: 0.0, z: 0.0},
@@ -17,31 +32,50 @@ let scene = {
             obj_id: 0,
         },
         {
-            position: {x: 1.0, y: 5.0, z: 1.0},
+            position: {x: 3.0, y: 5.0, z: 1.0},
             radius: 2.0,
             obj_id: 1,
         },
         {
-            position: {x: 0.0, y: 0.0, z: 5.0},
-            radius: 2.0,
+            position: {x: 0.0, y: -1020.0, z: 0.0},
+            radius: 1000.0,
             obj_id: 2,
         },
     ],
     materials: [
         {
-            color: {r: 1.0, g: 0.0, b: 0.0}
+            albedo: {r: 1.0, g: 0.0, b: 0.0},
+            emission: {r: 0.0, g: 0.0, b: 0.0},
+            specular_exp: 100.0,
+            shininess: 0.1,
+            refraction: 0.0,
+            reflection: 0.0,
+            fuzz: 0.0,
         },
         {
-            color: {r: 0.0, g: 10.0, b: 1.0}
+            albedo: {r: 0.0, g: 1.0, b: 1.0},
+            emission: {r: 0.0, g: 0.0, b: 0.0},
+            specular_exp: 100.0,
+            shininess: 1.0,
+            refraction: 0.0,
+            reflection: 0.0,
+            fuzz: 0.0,
         },
         {
-            color: {r: 1.0, g: 0.0, b: 1.0}
+            albedo: {r: 1.0, g: 1.0, b: 1.0},
+            emission: {r: 0.0, g: 0.0, b: 0.0},
+            specular_exp: 100.0,
+            shininess: 0.1,
+            refraction: 0.0,
+            reflection: 0.0,
+            fuzz: 0.0,
         },
     ]
 }
 
 const sphereByteLength = 32 //1 * 3 * 4 + 2 * 4; //1 vec3 of floats and 2 single variables;
-const materialByteLength = 16
+const materialByteLength = 12*4
+const lightByteLength = 12*4
 
 const getSkyGradient = () => {
     return new Float32Array([
@@ -80,8 +114,11 @@ const getSpheres = () => {
 }
 
 const getMaterial = (index:number) => {
+    let material = scene.materials[index]
     return new Float32Array([
-        scene.materials[index].color.r, scene.materials[index].color.g, scene.materials[index].color.b,
+        material.albedo.r, material.albedo.g, material.albedo.b, 0.0, //0.0 for memory layout with shader
+        material.emission.r, material.emission.g, material.emission.b, material.specular_exp,
+        material.shininess, material.refraction, material.reflection, material.fuzz
     ])
 }
 
@@ -95,6 +132,25 @@ const getMaterials = () => {
     return floatArray;
 }
 
+const getLight = (index:number) => {
+    let light = scene.lights[index]
+    return new Float32Array([
+        light.position.x, light.position.y, light.position.z, light.radius,
+        light.color.r, light.color.g, light.color.b, light.intensity,
+        light.fallout.c1, light.fallout.c2, 0.0, 0.0
+    ])
+}
+
+const getLights = () => {
+    let floatArray = new Float32Array(scene.lights.length * lightByteLength / 4)
+
+    for (let i = 0; i < scene.lights.length; i++) {
+        floatArray.set(getLight(i), i * lightByteLength / 4);
+    }
+
+    return floatArray;
+}
 
 
-export {scene, sphereByteLength, materialByteLength, getSkyGradient, getCamera, getSpheres, getMaterials};
+
+export {scene, sphereByteLength, materialByteLength, lightByteLength, getSkyGradient, getCamera, getSpheres, getMaterials, getLights};

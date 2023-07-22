@@ -3,8 +3,8 @@
 @group(0) @binding(2) var<uniform> sky_gradient : array<vec4<f32>, 2>;
 @group(0) @binding(3) var<uniform> spheres_array : array<Sphere, 100>;
 @group(0) @binding(4) var<uniform> materials_array : array<Material, 100>;
-@group(0) @binding(5) var<uniform> camera_setup : Camera;
-//[[group(0), binding(5), minBufferBindingSize(80)]] var<uniform> camera_setup : Camera;
+@group(0) @binding(5) var<uniform> lights_array : array<Light, 100>;
+@group(0) @binding(6) var<uniform> camera_setup : Camera;
 
 fn palette(t:f32) -> vec3<f32>{
     let a = vec3<f32>(0.5, 0.5, 0.5);
@@ -23,6 +23,12 @@ struct Sphere{
 
 struct Material{
     albedo:vec3<f32>,
+    emission:vec3<f32>,
+    specular_exp:f32,
+    shininess:f32,
+    refraction:f32,
+    reflection:f32,
+    fuzz:f32,
 }
 
 struct Camera{
@@ -32,6 +38,14 @@ struct Camera{
     forward:vec3<f32>,
     right:vec3<f32>,
     fov:f32
+}
+
+struct Light{
+    position:vec3<f32>,
+    radius:f32,
+    color:vec3<f32>,
+    intensity:f32,
+    fallout:vec2<f32>,
 }
 
 struct Ray{
@@ -131,18 +145,72 @@ fn ray_cast(sphere_count:u32, ray:Ray) -> Hit{
     return hit;
 }
 
-fn cast_raytracing(sphere_count:u32, ray:Ray) -> vec3<f32>{
+fn cast_raytracing(sphere_count:u32, light_count:u32, ray:Ray) -> vec3<f32>{
     let hit = ray_cast(sphere_count, ray);
 
     if hit.did_hit {
-        return compute_direct_illumination(hit.hit_data);
+        return compute_direct_illumination(sphere_count, light_count, ray.direction, hit.hit_data);
     } else {
         return skybox(ray);
     }
 }
 
-fn compute_direct_illumination(hit_data:HitData) -> vec3<f32>{
-    return materials_array[hit_data.obj_id].albedo * hit_data.norm;
+fn compute_direct_illumination(sphere_count:u32, light_count:u32, dir_in:vec3<f32>, hit_data:HitData) -> vec3<f32>{
+    var color = vec3(0.0, 0.0, 0.0);
+    let material = materials_array[hit_data.obj_id];
+    var effective_norm = hit_data.norm;
+
+    if (hit_data.inside){
+        effective_norm = -effective_norm;
+    }
+    const DISPLACEMENT_DISTANCE = 0.001;
+    let displacement_point = hit_data.point + DISPLACEMENT_DISTANCE * effective_norm;
+
+    for (var i = 0u; i < light_count; i = i + 1u) {
+        var light_dir = lights_array[i].position - hit_data.point;
+        let light_distance = length(light_dir);
+        // Normalize
+        light_dir = light_dir / light_distance;
+
+        // Cos between norm and light
+        let cos = dot(hit_data.norm, light_dir);
+
+        let ray = Ray(displacement_point, light_dir);
+        let intersection = ray_cast(sphere_count, ray);
+
+        if (intersection.did_hit && intersection.hit_data.distance < light_distance){
+            // Light obstructed, jump for next light
+            continue;
+        }
+
+        // Light can be seen
+        let test_color = vec3(1.0, 1.0, 1.0);
+        let light_color = light_attenuation(lights_array[i], light_distance); // Replace for light attenuation
+        let specular = light_specular(material, light_dir, hit_data.norm, dir_in);
+        color = color + cos * light_color * material.albedo + light_color * specular;
+    }
+
+    return color;
+}
+
+fn light_attenuation(light:Light, distance:f32) -> vec3<f32>{
+    return light.intensity / (1.0 + light.fallout.x * distance + light.fallout. y * distance * distance) * light.color;
+}
+
+fn light_specular(material:Material, light_dir:vec3<f32>, norm:vec3<f32>, vision_dir:vec3<f32>) -> f32{
+    let vision_reflected = reflect(vision_dir, norm);
+    var specular_attenuation = dot(light_dir, vision_reflected);
+
+    if specular_attenuation <= 0.0{
+        return 0.0;
+    }
+
+    let shininess = 1.0 - material.shininess;
+    let specular = material.specular_exp / 100.0;
+    specular_attenuation = 
+        shininess * pow(specular_attenuation, material.shininess) 
+        + specular * pow(specular_attenuation, material.specular_exp);
+    return specular_attenuation;
 }
 
 fn skybox(ray:Ray) -> vec3<f32>{
@@ -174,11 +242,10 @@ fn main(
     let y = fov * uv.y * (height / 2.0) / width;
     let ray = Ray(camera.position, normalize(camera.forward + x * camera.right + y * camera.up));
 
-    //let b = spheres_array[0].obj_id;
-    //let id = u32(round(b));
     let obj_count = u_info[0];
     let light_count = u_info[1];
-    let f = camera_setup.fov;
 
-    return vec4(cast_raytracing(obj_count, ray), 1.0);
+    let l = lights_array[0].color;
+
+    return vec4(cast_raytracing(obj_count, light_count, ray), 1.0);
 }
