@@ -119,7 +119,7 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
 
     const materialsBuffer = device.createBuffer({
         label: 'Materials',
-        size: 4800, //scene.scene.materials.length * scene.materialByteLength,
+        size: 6400, //scene.scene.materials.length * scene.materialByteLength,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     })
 
