@@ -59,6 +59,7 @@ struct Ray{
 struct HitData{
     point:vec3<f32>,
     norm:vec3<f32>,
+    effective_norm:vec3<f32>,
     inside:bool,
     distance:f32,
     obj_id:u32
@@ -123,10 +124,13 @@ fn intersect_sphere(id:u32, ray:Ray) -> Hit {
     //Distance from camera and surface norm
     let point = ray.origin + distance * ray.direction;
     let norm = normalize(point - sphere.position);
+    var effective_norm = norm;
+    if (inside) {effective_norm = -effective_norm;}
 
     hit.did_hit = true;
     hit.hit_data.point = point;
     hit.hit_data.norm = norm;
+    hit.hit_data.effective_norm = effective_norm;
     hit.hit_data.inside = inside;
     hit.hit_data.distance = distance;
     hit.hit_data.obj_id = id;
@@ -148,16 +152,15 @@ fn ray_cast(sphere_count:u32, ray:Ray) -> Hit{
     return hit;
 }
 
-fn cast_raytracing(sphere_count:u32, light_count:u32, ray:Ray) -> vec3<f32>{
-    let hit = ray_cast(sphere_count, ray);
-
-    if hit.did_hit {
-        return compute_direct_illumination(sphere_count, light_count, ray.direction, hit.hit_data)
-            + compute_indirect_illumination(sphere_count, ray, hit.hit_data);
-    } else {
-        return skybox(ray);
-    }
-}
+//fn cast_raytracing(sphere_count:u32, light_count:u32, ray:Ray) -> vec3<f32>{
+//    let hit = ray_cast(sphere_count, ray);
+//
+//    if hit.did_hit {
+//        return compute_direct_illumination(sphere_count, light_count, ray.direction, hit.hit_data);
+//    } else {
+//        return skybox(ray);
+//    }
+//}
 
 struct RayStack{
     ray:Ray,
@@ -277,10 +280,74 @@ fn compute_direct_illumination(sphere_count:u32, light_count:u32, dir_in:vec3<f3
     return color;
 }
 
-fn compute_indirect_illumination(sphere_count:u32, ray:Ray, hit_data:HitData) -> vec3<f32>{
-    var color = vec3<f32>(0.0, 0.0, 0.0);
+struct Scatter{
+    did_scatter:bool,
+    direction:vec3<f32>,
+    seed:u32,
+}
 
-    return color;
+fn scatter_diffuse(dir_in:vec3<f32>, hit_data:HitData, seed:u32) -> Scatter{
+    var scatter:Scatter;
+    let v = random_in_unit_vector(seed);
+    scatter.direction = normalize(hit_data.effective_norm + v.value); //Lambertian
+    scatter.seed = v.seed;
+    scatter.did_scatter = true;
+    return scatter;
+}
+
+fn scatter_metal(dir_in:vec3<f32>, hit_data:HitData, fuzz:f32, seed:u32) -> Scatter{
+    var scatter:Scatter;
+    scatter.did_scatter = false;
+
+    let reflected = reflect(dir_in, hit_data.effective_norm);
+    let v = random_in_unit_sphere(seed);
+    let dir = reflected + fuzz * v.value;
+
+    if dot(dir, hit_data.effective_norm) > 0.0 {
+        scatter.direction = normalize(dir);
+        scatter.did_scatter = true;
+    }
+
+    scatter.seed = v.seed;
+    return scatter;
+}
+
+fn scatter_glass(dir_in:vec3<f32>, hit_data:HitData, refraction:f32, seed:u32) -> Scatter{
+    var scatter:Scatter;
+    scatter.did_scatter = true;
+    var r = refraction;
+
+    if !hit_data.inside {
+        r = 1.0/r;
+    }
+
+    // Refract
+    let cos_theta = abs( dot(dir_in, hit_data.effective_norm));
+    let sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+    let sin_theta_2 = r * sin_theta;
+
+    let rand01 = rand01_f32(seed);
+    scatter.seed = rand01.seed;
+
+    if (sin_theta_2 > 1.0) || (reflectance(cos_theta, r) > rand01.value) {
+        //Impossible to cannot refract or reflectance chance is greater
+        scatter.direction = reflect(dir_in, hit_data.effective_norm);
+        return scatter;
+    }
+
+    let cos_theta_2 = sqrt(1.0 - sin_theta_2 * sin_theta_2);
+    let out_perpendicular = sin_theta_2 * normalize(dir_in + (abs(cos_theta) * hit_data.effective_norm));
+    let out_parallel = -cos_theta_2 * hit_data.effective_norm;
+
+    scatter.direction = normalize(out_parallel + out_perpendicular);
+
+    return scatter;
+}
+
+fn reflectance(cos:f32, refraction_relation:f32) -> f32 {
+    var r0 = (1.0 - refraction_relation) / (1.0 + refraction_relation);
+    r0 = r0 * r0;
+    return r0 + (1.0 - r0) * pow(1.0 - cos, 5.0);
 }
 
 fn light_attenuation(light:Light, distance:f32) -> vec3<f32>{
@@ -307,6 +374,60 @@ fn skybox(ray:Ray) -> vec3<f32>{
     let t = ray.direction.y;
     //return t * vec3(0.67, 0.84, 0.97) + (1.0 - t) * vec3(0.57, 0.63, 0.70);
     return t * sky_gradient[0].xyz + (1.0 - t) * sky_gradient[1].xyz;
+}
+
+fn random(seed:u32) -> u32{
+    return 1664525u * seed + 1013904223u;
+}
+
+struct FloatRandomSeed{
+    value:f32,
+    seed:u32,
+}
+
+struct Vec3RandomSeed{
+    value:vec3<f32>,
+    seed:u32,
+}
+
+fn rand01_f32(seed:u32) -> FloatRandomSeed{
+    var random = FloatRandomSeed(f32(seed)/f32(4294967295u), random(seed));
+    random.value = random.value;
+    return random;
+}
+
+fn rand_f32(seed:u32) -> FloatRandomSeed{
+    var random = FloatRandomSeed(f32(seed)/f32(4294967295u), random(seed));
+    random.value = random.value * 2.0 - 1.0;
+    return random;
+}
+
+fn random_in_unit_sphere(seed:u32) -> Vec3RandomSeed {
+    var s = seed;
+    loop{
+        let x = rand_f32(s);
+        let y = rand_f32(x.seed);
+        let z = rand_f32(y.seed);
+        let p = vec3(x.value, y.value, z.value);
+        if dot(p, p) < 1.0 { //square norm less one, means norm is less than one
+            return Vec3RandomSeed(p, z.seed);
+        }
+        s = z.seed;
+    }
+}
+
+fn random_in_hemisphere(norm:vec3<f32>, seed:u32) -> Vec3RandomSeed {
+    var v = random_in_unit_sphere(seed);
+    if dot(v.value, norm) < 0.0 {
+        v.value = -v.value;
+    }
+    return v;
+}
+
+fn random_in_unit_vector(seed:u32) -> Vec3RandomSeed {
+    var v = random_in_unit_sphere(seed);
+    v.value = normalize(v.value);
+    return v;
 }
 
 @fragment
