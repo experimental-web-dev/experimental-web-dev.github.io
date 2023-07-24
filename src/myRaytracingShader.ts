@@ -85,6 +85,11 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
     })
     const depthView = depthTexture.createView()
 
+    //const offscreenTexture = device.createTexture({
+    //    size, format,
+    //    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+    //})
+
     // create vertex buffer
     const vertexBuffer = device.createBuffer({
         label: 'GPUBuffer store vertex',
@@ -187,7 +192,7 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
 
     // return all vars
     return { pipeline, vertexBuffer, infoBuffer, uInfoBuffer, skyGradientBuffer, spheresBuffer, materialsBuffer,
-        lightsBuffer, cameraBuffer, uniformGroup, depthTexture, depthView }
+        lightsBuffer, cameraBuffer, uniformGroup, depthTexture, depthView}
 }
 
 // create & submit device commands
@@ -224,7 +229,7 @@ function draw(
             depthClearValue: 1.0,
             depthLoadOp: 'clear',
             depthStoreOp: 'store',
-        }
+        },
     }
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor)
     passEncoder.setPipeline(pipelineObj.pipeline)
@@ -251,9 +256,10 @@ async function run(){
     const startTime = Date.now()
     function frame(){
         // rotate by time, and update transform matrix
+        const milliseconds = Date.now() - startTime;
         const now = (Date.now() - startTime) / 1000
         const info = new Float32Array([now, aspect, size.width, size.height])
-        const uInfo = new Uint32Array([scene.scene.spheres.length, scene.scene.lights.length])
+        const uInfo = new Uint32Array([scene.scene.spheres.length, scene.scene.lights.length, Math.trunc(milliseconds)])
 
         device.queue.writeBuffer(
             pipelineObj.infoBuffer,

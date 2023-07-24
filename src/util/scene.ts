@@ -4,7 +4,7 @@ let scene = {
     skyGradient_1: {x: 0.0, y: 0.0, z: 0.0},
     skyGradient_2: {x: 0.0, y: 0.0, z: 0.0},
     camera: {
-        position: {x: 0.0, y: 1.0, z: -5.0},
+        position: {x: 0.0, y: 3.0, z: -5.0},
         lookAtTarget: {x: 0.0, y: 0.0, z: 0.0},
         up: {x: 0.0, y: 1.0, z: 0.0},
         forward: {x: 0.0, y: 0.0, z: 1.0},
@@ -29,12 +29,12 @@ let scene = {
     ],
     spheres: [
         {
-            position: {x: -1.0, y: 1.0, z: 0.0},
+            position: {x: -1.1, y: 1.05, z: 0.0},
             radius: 1.0,
             obj_id: 0,
         },
         {
-            position: {x: 1.0, y: 1.0, z: 0.0},
+            position: {x: 1.0, y: 1.05, z: 0.0},
             radius: 1.0,
             obj_id: 1,
         },
@@ -46,16 +46,16 @@ let scene = {
     ],
     materials: [
         {
-            albedo: {r: 0.8, g: 0.4, b: 0.4},
-            diffuse: 1.0,
+            albedo: {r: 0.9, g: 0.9, b: 0.9},
+            diffuse: 0.0,
             emission: {r: 0.0, g: 0.0, b: 0.0},
             specular: 0.0,
-            specular_exp: 1.0,
-            shininess: 1.0,
-            refraction: 0.0,
-            refractive_index: 0.0,
-            reflection: 0.0,
-            fuzz: 0.0,
+            specular_exp: 100.0,
+            shininess: 0.1,
+            refraction: 1.0,
+            refractive_index: 2.00,
+            reflection: 1.0,
+            fuzz: 0.5,
         },
         {
             albedo: {r: 0.0, g: 0.0, b: 0.0},

@@ -29,7 +29,7 @@ struct Material{
     specular_exp:f32,
     shininess:f32,
     refraction:f32,
-    refreactive_index:f32,
+    refractive_index:f32,
     reflection:f32,
     fuzz:f32,
 }
@@ -125,7 +125,7 @@ fn intersect_sphere(id:u32, ray:Ray) -> Hit {
     let point = ray.origin + distance * ray.direction;
     let norm = normalize(point - sphere.position);
     var effective_norm = norm;
-    if (inside) {effective_norm = -effective_norm;}
+    if (inside) {effective_norm = -1.0 * norm;}
 
     hit.did_hit = true;
     hit.hit_data.point = point;
@@ -179,12 +179,20 @@ fn min_element_wise(vector:vec3<f32>, m:f32) -> vec3<f32>{
 }
 
 fn stack_raytracing(sphere_count:u32, light_count:u32, ray:Ray) -> vec3<f32>{
-    const stack_size = 5u;
+    const stack_size = 10u;
     var stack:array<RayStack, stack_size>;
     var stack_pointer = 0u;
 
     stack[stack_pointer].ray = ray;
     stack[stack_pointer].color = vec3(0.0, 0.0, 0.0);
+
+    let helper_seed = u32(abs(10000.0 * ray.direction.x + 908721.0 * ray.direction.y + 12735758.0 * ray.direction.z));
+    var seed = u_info[2] + helper_seed;
+    seed = random(seed);
+    seed = random(seed);
+    seed = random(seed);
+
+    //return rand01_f32(seed).value * vec3<f32>(1.0, 1.0, 1.0) + 0.0;
 
     // Start Stack Loop
     loop {
@@ -192,16 +200,23 @@ fn stack_raytracing(sphere_count:u32, light_count:u32, ray:Ray) -> vec3<f32>{
 
         if (hit.did_hit) {
             stack[stack_pointer].hit_data = hit.hit_data;
-            stack[stack_pointer].color = compute_direct_illumination(sphere_count, light_count, stack[stack_pointer].ray.direction, hit.hit_data);
+            if (materials_array[hit.hit_data.obj_id].diffuse > 0.9){
+                stack[stack_pointer].color += compute_direct_illumination(sphere_count, light_count, stack[stack_pointer].ray.direction, hit.hit_data);
+            }
+            
             stack[stack_pointer].color += materials_array[hit.hit_data.obj_id].emission;
             if (stack_pointer + 1u >= stack_size) {break;}
-            //break;
 
             var out_ray:Ray;
 
-            let reflection = reflect(stack[stack_pointer].ray.direction, stack[stack_pointer].hit_data.norm);
+            let scatter = scatter(ray, hit.hit_data, materials_array[hit.hit_data.obj_id], seed);
+            seed = scatter.seed;
             // Direction is returned by scatter, using reflection for now
-            out_ray.direction = reflection;
+            if (!scatter.did_scatter){
+                break;
+            }
+
+            out_ray.direction = scatter.direction;
 
             if (dot(hit.hit_data.norm, out_ray.direction) >= 0.0) {
                 out_ray.origin = hit.hit_data.point + DISPLACEMENT_DISTANCE * hit.hit_data.norm;
@@ -225,17 +240,17 @@ fn stack_raytracing(sphere_count:u32, light_count:u32, ray:Ray) -> vec3<f32>{
         let indirect_illumination = stack[index+1u].color;
         let material = materials_array[stack[index].hit_data.obj_id];
 
-        var effective_norm = stack[index].hit_data.norm;
-        if stack[index].hit_data.inside {
-            effective_norm = -1.0 * effective_norm;
-        }
+        var effective_norm = stack[index].hit_data.effective_norm;
+
         let specular = light_specular(material, stack[index + 1u].ray.direction,
              effective_norm, stack[index].ray.direction);
-        
-        let specular_color = material.specular * specular;
-        let albedo_color = material.diffuse * material.albedo;
 
-        stack[index].color +=  indirect_illumination * (specular_color + albedo_color);
+        var attenuation = vec3(1.0, 1.0, 1.0);
+        if (material.diffuse > 0.1) {
+            attenuation = material.albedo;
+        }
+
+        stack[index].color +=  indirect_illumination * (specular + attenuation);
     }
 
     // Reduce colors
@@ -246,15 +261,13 @@ fn stack_raytracing(sphere_count:u32, light_count:u32, ray:Ray) -> vec3<f32>{
 fn compute_direct_illumination(sphere_count:u32, light_count:u32, dir_in:vec3<f32>, hit_data:HitData) -> vec3<f32>{
     var color = vec3(0.0, 0.0, 0.0);
     let material = materials_array[hit_data.obj_id];
-    var effective_norm = hit_data.norm;
 
-    if (hit_data.inside){
-        effective_norm = -effective_norm;
-    }
-
-    let displacement_point = hit_data.point + DISPLACEMENT_DISTANCE * effective_norm;
+    let displacement_point = hit_data.point + DISPLACEMENT_DISTANCE * hit_data.effective_norm;
 
     for (var i = 0u; i < light_count; i = i + 1u) {
+        if (lights_array[i].intensity < 0.01) {
+            continue;
+        }
         var light_dir = lights_array[i].position - hit_data.point;
         let light_distance = length(light_dir);
         // Normalize
@@ -286,6 +299,18 @@ struct Scatter{
     seed:u32,
 }
 
+fn scatter(ray:Ray, hit_data:HitData, material:Material, seed:u32) -> Scatter{
+    if (material.diffuse > 0.9) {
+        return scatter_diffuse(ray.direction, hit_data, seed);
+    }
+
+    if (material.refraction > 0.9) {
+        return scatter_glass(ray.direction, hit_data, material.refractive_index, seed);
+    }
+    
+    return scatter_metal(ray.direction, hit_data, material.fuzz, seed);
+}
+
 fn scatter_diffuse(dir_in:vec3<f32>, hit_data:HitData, seed:u32) -> Scatter{
     var scatter:Scatter;
     let v = random_in_unit_vector(seed);
@@ -301,7 +326,7 @@ fn scatter_metal(dir_in:vec3<f32>, hit_data:HitData, fuzz:f32, seed:u32) -> Scat
 
     let reflected = reflect(dir_in, hit_data.effective_norm);
     let v = random_in_unit_sphere(seed);
-    let dir = reflected + fuzz * v.value;
+    let dir = reflected + (fuzz * v.value);
 
     if dot(dir, hit_data.effective_norm) > 0.0 {
         scatter.direction = normalize(dir);
@@ -315,21 +340,32 @@ fn scatter_metal(dir_in:vec3<f32>, hit_data:HitData, fuzz:f32, seed:u32) -> Scat
 fn scatter_glass(dir_in:vec3<f32>, hit_data:HitData, refraction:f32, seed:u32) -> Scatter{
     var scatter:Scatter;
     scatter.did_scatter = true;
-    var r = refraction;
+    scatter.seed = seed;
 
-    if !hit_data.inside {
-        r = 1.0/r;
+    let norm = hit_data.norm;
+
+    //let cos = dot(dir_in, norm);
+    //let out_perpendicular = refraction * (dir_in + abs(cos) * norm);
+    //let out_parallel = -sqrt(1.0 - dot(out_perpendicular, out_perpendicular)) * norm;
+    //scatter.direction = normalize(out_parallel + out_perpendicular);
+    //return scatter;
+
+    var r:f32;
+    if hit_data.inside{
+            r = refraction;
+    }else{
+            r = 1.0/refraction;
     }
 
     // Refract
-    let cos_theta = abs( dot(dir_in, hit_data.effective_norm));
+    let cos_theta = abs(dot(dir_in, hit_data.effective_norm));
     let sin_theta = sqrt(1.0 - cos_theta * cos_theta);
     let sin_theta_2 = r * sin_theta;
 
     let rand01 = rand01_f32(seed);
     scatter.seed = rand01.seed;
 
-    if (sin_theta_2 > 1.0) || (reflectance(cos_theta, r) > rand01.value) {
+    if (sin_theta_2 > 1.0) || (reflectance(cos_theta, r) > rand01.value) { // || (reflectance(cos_theta, r) > rand01.value)
         //Impossible to cannot refract or reflectance chance is greater
         scatter.direction = reflect(dir_in, hit_data.effective_norm);
         return scatter;
@@ -367,7 +403,7 @@ fn light_specular(material:Material, light_dir:vec3<f32>, norm:vec3<f32>, vision
     specular_attenuation = 
         shininess * pow(specular_attenuation, material.shininess) 
         + specular * pow(specular_attenuation, material.specular_exp);
-    return specular_attenuation;
+    return material.specular * specular_attenuation;
 }
 
 fn skybox(ray:Ray) -> vec3<f32>{
@@ -430,6 +466,22 @@ fn random_in_unit_vector(seed:u32) -> Vec3RandomSeed {
     return v;
 }
 
+fn raytracing(camera:Camera, uv:vec2<f32>, width:f32, height:f32, obj_count:u32, light_count:u32, rays_per_pixel:u32) -> vec3<f32>{
+    // Many possible otimizations here, not the time yet
+    let fov = tan(camera.fov / 180.0 * 3.1514 / 2.0);
+    let x = fov * uv.x * (width / 2.0) / width;
+    let y = fov * uv.y * (height / 2.0) / width;
+    let ray = Ray(camera.position, normalize(camera.forward + x * camera.right + y * camera.up));
+
+    var color = vec3<f32>(0.0, 0.0, 0.0);
+    for (var i = 0u; i < rays_per_pixel; i = i + 1u) {
+        let ray = Ray(camera.position, normalize(camera.forward + x * camera.right + y * camera.up));
+        color += stack_raytracing(obj_count, light_count, ray);
+    }
+
+    return color / f32(rays_per_pixel);
+}
+
 @fragment
 fn main(
     @location(0) fragUV: vec2<f32>,
@@ -441,23 +493,14 @@ fn main(
     let aspect_ratio = info[1];
     let width = info[2];
     let height = info[3];
-    var finalColor = vec3<f32>(0.0);
 
     let camera_distance = camera_setup.position.z;
-    let camera = create_camera(vec3(camera_distance * sin(time), 1.0, camera_distance * cos(time)), camera_setup.look_target, camera_setup.fov);
-    //var camera = create_camera(camera_setup.position, camera_setup.look_target, camera_setup.fov);
-    //camera.position = vec3(30.0 * sin(time), 1.0, 30.0 * cos(time));
-
-    // Many possible otimizations here, not the time yet
-    let fov = tan(camera.fov / 180.0 * 3.1514 / 2.0);
-    let x = fov * uv.x * (width / 2.0) / width;
-    let y = fov * uv.y * (height / 2.0) / width;
-    let ray = Ray(camera.position, normalize(camera.forward + x * camera.right + y * camera.up));
+    let camera = create_camera(vec3(camera_distance * sin(time), camera_setup.position.y, camera_distance * cos(time)), camera_setup.look_target, camera_setup.fov);
 
     let obj_count = u_info[0];
     let light_count = u_info[1];
 
-    let l = lights_array[0].color;
+    let color = raytracing(camera, uv, width, height, obj_count, light_count, 1u);
 
-    return vec4(stack_raytracing(obj_count, light_count, ray), 1.0);
+    return vec4(color, 1.0);
 }
