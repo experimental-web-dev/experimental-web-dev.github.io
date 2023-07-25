@@ -6,6 +6,8 @@
 @group(0) @binding(5) var<uniform> lights_array : array<Light, 100>;
 @group(0) @binding(6) var<uniform> camera_setup : Camera;
 
+@group(1) @binding(0) var accumulator_texture: texture_2d<f32>;
+
 fn palette(t:f32) -> vec3<f32>{
     let a = vec3<f32>(0.5, 0.5, 0.5);
     let b = vec3<f32>(0.5, 0.5, 0.5);
@@ -480,11 +482,14 @@ fn raytracing(camera:Camera, uv:vec2<f32>, width:f32, height:f32, obj_count:u32,
     return color / f32(rays_per_pixel);
 }
 
-@fragment
+const work_size:u32 = u32(256);
+@compute @workgroup_size(work_size)
 fn main(
-    @location(0) fragUV: vec2<f32>,
-    @location(1) fragPosition: vec4<f32>
-) -> @location(0) vec4<f32> {
+    @builtin(global_invocation_id) GlobalInvocationID : vec3<u32>
+ ) {
+    var index = GlobalInvocationID.x;
+    let u = f32(index) / 64000.0;
+    var fragUV = vec2(u, u);
     var uv = fragUV * 2.0 - 1.0;
     let uv0 = uv;
     let time = 1.0 * info[0];
@@ -498,7 +503,9 @@ fn main(
     let obj_count = u_info[0];
     let light_count = u_info[1];
 
-    let color = raytracing(camera, uv, width, height, obj_count, light_count, 1u);
+    let color = raytracing(camera, uv, width, height, obj_count, light_count, 2000u);
 
-    return vec4(color, 1.0);
+    let pixel_color = vec4(color, 1.0);
+
+    let a = textureDimensions(accumulator_texture);
 }

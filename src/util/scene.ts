@@ -1,10 +1,79 @@
-let scene = {
-    //skyGradient_1: {x: 0.67, y: 0.84, z: 0.97},
-    //skyGradient_2: {x: 0.57, y: 0.63, z: 0.70},
+let drakDiffuseScene = {
     skyGradient_1: {x: 0.0, y: 0.0, z: 0.0},
     skyGradient_2: {x: 0.0, y: 0.0, z: 0.0},
     camera: {
         position: {x: 0.0, y: 3.0, z: -5.0},
+        lookAtTarget: {x: 0.0, y: 0.0, z: 0.0},
+        up: {x: 0.0, y: 1.0, z: 0.0},
+        forward: {x: 0.0, y: 0.0, z: 1.0},
+        right: {x: 1.0, y: 0.0, z: 0.0},
+        fov: 120.0,
+    },
+    lights: [
+
+    ],
+    spheres: [
+        {
+            position: {x: -1.0, y: 1.00, z: 0.0},
+            radius: 1.0,
+            obj_id: 0,
+        },
+        {
+            position: {x: 1.0, y: 1.00, z: 0.0},
+            radius: 1.0,
+            obj_id: 1,
+        },
+        {
+            position: {x: 0.0, y: -1000.0, z: 0.0},
+            radius: 1000.0,
+            obj_id: 2,
+        },
+    ],
+    materials: [
+        {
+            albedo: {r: 0.9, g: 0.9, b: 0.9},
+            diffuse: 1.0,
+            emission: {r: 0.0, g: 0.0, b: 0.0},
+            specular: 0.0,
+            specular_exp: 100.0,
+            shininess: 0.1,
+            refraction: 1.0,
+            refractive_index: 2.00,
+            reflection: 1.0,
+            fuzz: 0.5,
+        },
+        {
+            albedo: {r: 0.0, g: 0.0, b: 0.0},
+            diffuse: 1.0,
+            emission: {r: 1.0, g: 1.0, b: 0.0},
+            specular: 0.0,
+            specular_exp: 1.0,
+            shininess: 1.0,
+            refraction: 0.0,
+            refractive_index: 0.0,
+            reflection: 0.0,
+            fuzz: 0.0,
+        },
+        {
+            albedo: {r: 0.9, g: 0.9, b: 0.9},
+            diffuse: 1.0,
+            emission: {r: 0.0, g: 0.0, b: 0.0},
+            specular: 0.0,
+            specular_exp: 1.0,
+            shininess: 1.0,
+            refraction: 0.0,
+            refractive_index: 0.0,
+            reflection: 0.0,
+            fuzz: 0.0,
+        },
+    ]
+}
+
+let lightRefractionScene = {
+    skyGradient_1: {x: 0.67, y: 0.84, z: 0.97},
+    skyGradient_2: {x: 0.57, y: 0.63, z: 0.70},
+    camera: {
+        position: {x: 0.0, y: 1.1, z: -5.0},
         lookAtTarget: {x: 0.0, y: 0.0, z: 0.0},
         up: {x: 0.0, y: 1.0, z: 0.0},
         forward: {x: 0.0, y: 0.0, z: 1.0},
@@ -83,6 +152,8 @@ let scene = {
         },
     ]
 }
+
+const scene = lightRefractionScene
 
 const sphereByteLength = 32 //1 * 3 * 4 + 2 * 4; //1 vec3 of floats and 2 single variables;
 const materialByteLength = 16*4
