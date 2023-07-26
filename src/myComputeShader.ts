@@ -1,6 +1,5 @@
-import basicVert from './shaders/myRaytracingShader.vert.wgsl?raw'
-import positionFrag from './shaders/myRaytracingShader.frag.wgsl?raw'
 import computeShader from './shaders/myComputeShader.wgsl?raw'
+import displayShader from './shaders/myDisplayShader.wgsl?raw'
 import * as cube from './util/screen'
 import * as scene from './util/scene'
 
@@ -30,70 +29,46 @@ async function initWebGPU(canvas: HTMLCanvasElement) {
 
 // create pipiline & buffers
 async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {width:number, height:number}) {
-    const pipeline = await device.createRenderPipelineAsync({
-        label: 'Basic Pipline',
+    const renderPipeline = device.createRenderPipeline({
         layout: 'auto',
         vertex: {
             module: device.createShaderModule({
-                code: basicVert,
+            code: displayShader,
             }),
-            entryPoint: 'main',
-            buffers: [{
-                arrayStride: 5 * 4, // 3 position 2 uv,
-                attributes: [
-                    {
-                        // position
-                        shaderLocation: 0,
-                        offset: 0,
-                        format: 'float32x3',
-                    },
-                    {
-                        // uv
-                        shaderLocation: 1,
-                        offset: 3 * 4,
-                        format: 'float32x2',
-                    }
-                ]
-            }]
+            entryPoint: 'vert_main',
         },
         fragment: {
             module: device.createShaderModule({
-                code: positionFrag,
+            code: displayShader,
             }),
-            entryPoint: 'main',
+            entryPoint: 'frag_main',
             targets: [
-                {
-                    format: format
-                }
-            ]
+            {
+                format,
+            },
+            ],
         },
         primitive: {
             topology: 'triangle-list',
-            // Culling backfaces pointing away from the camera
-            cullMode: 'back',
-            frontFace: 'ccw'
         },
-        // Enable depth testing since we have z-level positions
-        // Fragment closest to the camera is rendered in front
-        depthStencil: {
-            depthWriteEnabled: true,
-            depthCompare: 'less',
-            format: 'depth24plus',
-        }
-    } as GPURenderPipelineDescriptor)
-    // create depthTexture for renderPass
-    const depthTexture = device.createTexture({
-        size, format: 'depth24plus',
-        usage: GPUTextureUsage.RENDER_ATTACHMENT,
-    })
-    const depthView = depthTexture.createView()
+    });
+    
+    const sampler = device.createSampler({
+    magFilter: 'linear',
+    minFilter: 'linear',
+    });
 
-    // create depthTexture for renderPass
     const accumulatorTexture = device.createTexture({
         size, format,
-        usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+        usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,// | GPUTextureUsage.STORAGE_BINDING,
     })
     const accumulatorView = accumulatorTexture.createView()
+
+    const outTexture = device.createTexture({
+        size, format: 'rgba8unorm',
+        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING,
+    })
+    const outView = outTexture.createView()
 
     // create a compute pipeline
     const computePipeline = await device.createComputePipelineAsync({
@@ -156,52 +131,18 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     })
 
-    // create a uniform group for Matrix
-    const uniformGroup = device.createBindGroup({
-        label: 'Uniform Group',
-        layout: pipeline.getBindGroupLayout(0),
+    // create a uniform group for render pass
+    const renderGroup = device.createBindGroup({
+        label: 'Render Group',
+        layout: renderPipeline.getBindGroupLayout(0),
         entries: [
             {
                 binding: 0,
-                resource: {
-                    buffer: infoBuffer
-                }
+                resource: sampler,
             },
             {
                 binding: 1,
-                resource: {
-                    buffer: uInfoBuffer
-                }
-            },
-            {
-                binding: 2,
-                resource: {
-                    buffer: skyGradientBuffer
-                }
-            },
-            {
-                binding: 3,
-                resource: {
-                    buffer: spheresBuffer
-                }
-            },
-            {
-                binding: 4,
-                resource: {
-                    buffer: materialsBuffer
-                }
-            },
-            {
-                binding: 5,
-                resource: {
-                    buffer: lightsBuffer
-                }
-            },
-            {
-                binding: 6,
-                resource: {
-                    buffer: cameraBuffer
-                }
+                resource: outView,
             },
         ]
     })
@@ -257,19 +198,27 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
     })
 
     const accumulatorBindGroup = device.createBindGroup({
-        label: 'Compute Group',
+        label: 'Accumulator/Compute BindGroup',
         layout: computePipeline.getBindGroupLayout(1),
         entries: [
             {
                 binding: 0,
-                resource: accumulatorView,
+                resource: sampler,
             },
+            {
+                binding: 1,
+                resource: accumulatorView
+            },
+            {
+                binding: 2,
+                resource: outView
+            }
         ]
     })
 
     // return all vars
-    return { pipeline, computePipeline, vertexBuffer, infoBuffer, uInfoBuffer, skyGradientBuffer, spheresBuffer, materialsBuffer,
-        lightsBuffer, cameraBuffer, uniformGroup, computeGroup, accumulatorBindGroup, depthTexture, depthView, accumulatorTexture, accumulatorView}
+    return { renderPipeline, computePipeline, vertexBuffer, infoBuffer, uInfoBuffer, skyGradientBuffer, spheresBuffer, materialsBuffer,
+        lightsBuffer, cameraBuffer, renderGroup, computeGroup, accumulatorBindGroup, accumulatorTexture, accumulatorView, outView}
 }
 
 // create & submit device commands
@@ -277,7 +226,7 @@ function draw(
     device: GPUDevice, 
     context: GPUCanvasContext,
     pipelineObj: {
-        pipeline: GPURenderPipeline
+        renderPipeline: GPURenderPipeline
         computePipeline:GPUComputePipeline
         vertexBuffer: GPUBuffer
         infoBuffer: GPUBuffer
@@ -287,10 +236,9 @@ function draw(
         materialsBuffer: GPUBuffer
         lightsBuffer: GPUBuffer
         cameraBuffer: GPUBuffer
-        uniformGroup: GPUBindGroup
+        renderGroup: GPUBindGroup
         computeGroup: GPUBindGroup
         accumulatorBindGroup: GPUBindGroup
-        depthView: GPUTextureView
         accumulatorView: GPUTextureView
     }
 ) {
@@ -301,7 +249,7 @@ function draw(
     computePass.setPipeline(pipelineObj.computePipeline)
     computePass.setBindGroup(0, pipelineObj.computeGroup)
     computePass.setBindGroup(1, pipelineObj.accumulatorBindGroup)
-    computePass.dispatchWorkgroups(64000)
+    computePass.dispatchWorkgroups(10, 10)
     computePass.end()
 
     // render pass
@@ -314,21 +262,12 @@ function draw(
                 storeOp: 'store'
             }
         ],
-        depthStencilAttachment: {
-            view: pipelineObj.depthView,
-            depthClearValue: 1.0,
-            depthLoadOp: 'clear',
-            depthStoreOp: 'store',
-        },
     }
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor)
-    passEncoder.setPipeline(pipelineObj.pipeline)
-    // set vertex
+    passEncoder.setPipeline(pipelineObj.renderPipeline)
     passEncoder.setVertexBuffer(0, pipelineObj.vertexBuffer)
-    // set uniformGroup
-    passEncoder.setBindGroup(0, pipelineObj.uniformGroup)
-    // draw vertex count of cube
-    passEncoder.draw(cube.vertexCount)
+    passEncoder.setBindGroup(0, pipelineObj.renderGroup)
+    passEncoder.draw(cube.vertexCount);
     passEncoder.end()
     // webgpu run in a separate process, all the commands will be executed after submit
     device.queue.submit([commandEncoder.finish()])
@@ -405,18 +344,12 @@ async function run(){
         size.width = canvas.width = canvas.clientWidth * devicePixelRatio
         size.height = canvas.height = canvas.clientHeight * devicePixelRatio
         // don't need to recall context.configure() after v104
-        // re-create depth texture
-        pipelineObj.depthTexture.destroy()
-        pipelineObj.depthTexture = device.createTexture({
-            size, format: 'depth24plus',
-            usage: GPUTextureUsage.RENDER_ATTACHMENT,
-        })
-        pipelineObj.depthView = pipelineObj.depthTexture.createView()
+        // re-create texture
 
         pipelineObj.accumulatorTexture.destroy()
         pipelineObj.accumulatorTexture = device.createTexture({
             size, format,
-            usage: GPUTextureUsage.RENDER_ATTACHMENT,
+            usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
         })
         pipelineObj.accumulatorView = pipelineObj.accumulatorTexture.createView()
         // update aspect

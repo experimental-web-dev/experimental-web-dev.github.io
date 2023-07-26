@@ -346,10 +346,18 @@ fn scatter_glass(dir_in:vec3<f32>, hit_data:HitData, refraction:f32, seed:u32) -
     let dir = dir_in;
 
     var r:f32;
+    var sign:f32;
     if hit_data.inside{
             r = refraction;
+            sign = -1.0;
+            //scatter.direction = dir_in;
+            //return scatter;
+            
     }else{
             r = 1.0/refraction;
+            sign = 1.0;
+            //catter.direction = dir_in;
+            //return scatter;
     }
 
     // Refract
@@ -366,14 +374,14 @@ fn scatter_glass(dir_in:vec3<f32>, hit_data:HitData, refraction:f32, seed:u32) -
         return scatter;
     }
 
-    let out_perpendicular = r * (dir + abs(cos_theta) * norm);
+    //let out_perpendicular = r * (dir + abs(cos_theta) * norm);
     //let out_parallel = -sqrt(1.0 - dot(out_perpendicular, out_perpendicular)) * norm;//-cos_theta_2 * norm;
 
     let cos_theta_2 = sqrt(1.0 - sin_theta_2 * sin_theta_2);
-    //let out_perpendicular = sin_theta_2 * normalize(dir_in + abs(cos_theta) * norm);
+    let out_perpendicular = sin_theta_2 * normalize(dir_in + abs(cos_theta) * norm);
     let out_parallel = -cos_theta_2 * norm;
     
-    scatter.direction = normalize(out_parallel + out_perpendicular);
+    scatter.direction = normalize(out_parallel + sign * out_perpendicular);
 
     return scatter;
 }

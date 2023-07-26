@@ -122,7 +122,7 @@ let lightRefractionScene = {
             specular_exp: 100.0,
             shininess: 0.1,
             refraction: 1.0,
-            refractive_index: 2.00,
+            refractive_index: 2.10,
             reflection: 1.0,
             fuzz: 0.5,
         },

@@ -6,7 +6,9 @@
 @group(0) @binding(5) var<uniform> lights_array : array<Light, 100>;
 @group(0) @binding(6) var<uniform> camera_setup : Camera;
 
-@group(1) @binding(0) var accumulator_texture: texture_2d<f32>;
+@group(1) @binding(0) var mySampler : sampler;
+@group(1) @binding(1) var inTexture : texture_2d<f32>;
+@group(1) @binding(2) var outTexture : texture_storage_2d<rgba8unorm, write>;
 
 fn palette(t:f32) -> vec3<f32>{
     let a = vec3<f32>(0.5, 0.5, 0.5);
@@ -482,14 +484,18 @@ fn raytracing(camera:Camera, uv:vec2<f32>, width:f32, height:f32, obj_count:u32,
     return color / f32(rays_per_pixel);
 }
 
-const work_size:u32 = u32(256);
-@compute @workgroup_size(work_size)
+const work_size_x = 8;
+const work_size_y = 8;
+const dispatch_x = 10;
+const dispatch_y = 10;
+
+@compute @workgroup_size(work_size_x, work_size_y, 1)
 fn main(
     @builtin(global_invocation_id) GlobalInvocationID : vec3<u32>
  ) {
-    var index = GlobalInvocationID.x;
-    let u = f32(index) / 64000.0;
-    var fragUV = vec2(u, u);
+    let x = f32(GlobalInvocationID.x) / f32(work_size_x * dispatch_x);
+    let y = f32(GlobalInvocationID.y) / f32(work_size_y * dispatch_y);
+    var fragUV = vec2(x, y);
     var uv = fragUV * 2.0 - 1.0;
     let uv0 = uv;
     let time = 1.0 * info[0];
@@ -507,5 +513,17 @@ fn main(
 
     let pixel_color = vec4(color, 1.0);
 
-    let a = textureDimensions(accumulator_texture);
+    let pixel = textureSampleLevel(
+        inTexture,
+        mySampler,
+        vec2<f32>(0.0),
+        0.0
+      ).rgb;
+    let a = textureDimensions(inTexture);
+
+    var write_index = vec2<i32>(GlobalInvocationID.xy);
+    write_index.y = work_size_y * dispatch_y - write_index.y - 1;
+
+    let uv_color = vec4(uv, sin(time), 1.0);
+    textureStore(outTexture, write_index, pixel_color);
 }
