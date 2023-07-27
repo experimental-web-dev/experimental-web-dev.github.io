@@ -85,10 +85,19 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
     })
     const depthView = depthTexture.createView()
 
+    const lastFrameTexture = device.createTexture({
+        size, format,
+        usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+    })
+
+    const lastFrameView = lastFrameTexture.createView()
+
     //const offscreenTexture = device.createTexture({
     //    size, format,
     //    usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
     //})
+//
+    //const offscreenView = offscreenTexture.createView()
 
     // create vertex buffer
     const vertexBuffer = device.createBuffer({
@@ -190,9 +199,29 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
         ]
     })
 
+    const sampler = device.createSampler({
+        magFilter: 'linear',
+        minFilter: 'linear',
+    });
+
+    const lastFrameGroup = device.createBindGroup({
+        label: 'Frame Group',
+        layout: pipeline.getBindGroupLayout(1),
+        entries:[
+            {
+                binding: 0,
+                resource: sampler
+            },
+            {
+                binding: 1,
+                resource: lastFrameView
+            }
+        ]
+    })
+
     // return all vars
     return { pipeline, vertexBuffer, infoBuffer, uInfoBuffer, skyGradientBuffer, spheresBuffer, materialsBuffer,
-        lightsBuffer, cameraBuffer, uniformGroup, depthTexture, depthView}
+        lightsBuffer, cameraBuffer, uniformGroup, depthTexture, depthView, lastFrameTexture, lastFrameView, lastFrameGroup, sampler}
 }
 
 // create & submit device commands
@@ -211,6 +240,10 @@ function draw(
         cameraBuffer: GPUBuffer
         uniformGroup: GPUBindGroup
         depthView: GPUTextureView
+        lastFrameTexture: GPUTexture
+        lastFrameView: GPUTextureView
+        lastFrameGroup: GPUBindGroup
+        sampler: GPUSampler
     }
 ) {
     // start encoder
@@ -231,17 +264,27 @@ function draw(
             depthStoreOp: 'store',
         },
     }
+
+    // we can use commandEncoder to copy textures
+    //commandEncoder.copyTextureToBuffer
+
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor)
+    
     passEncoder.setPipeline(pipelineObj.pipeline)
-    // set vertex
     passEncoder.setVertexBuffer(0, pipelineObj.vertexBuffer)
-    // set uniformGroup
     passEncoder.setBindGroup(0, pipelineObj.uniformGroup)
-    // draw vertex count of cube
+    passEncoder.setBindGroup(1, pipelineObj.lastFrameGroup)
+
     passEncoder.draw(cube.vertexCount)
     passEncoder.end()
+
     // webgpu run in a separate process, all the commands will be executed after submit
     device.queue.submit([commandEncoder.finish()])
+    device.queue.copyExternalImageToTexture(
+        {source: context.canvas},// pipelineObj.offscreenTexture},
+        {texture: pipelineObj.lastFrameTexture},
+        [context.canvas.width, context.canvas.height]
+    )
 }
 
 async function run(){
@@ -254,12 +297,16 @@ async function run(){
     let aspect = size.width/ size.height
     // start loop
     const startTime = Date.now()
+    let frameCount = 0
     function frame(){
         // rotate by time, and update transform matrix
         const milliseconds = Date.now() - startTime;
         const now = (Date.now() - startTime) / 1000
         const info = new Float32Array([now, aspect, size.width, size.height])
-        const uInfo = new Uint32Array([scene.scene.spheres.length, scene.scene.lights.length, Math.trunc(milliseconds)])
+        //console.log(`frame size ${size.width}, ${size.height}`)
+        //console.log(`last_frame size ${pipelineObj.lastFrameTexture.width}, ${pipelineObj.lastFrameTexture.height}`)
+        
+        const uInfo = new Uint32Array([scene.scene.spheres.length, scene.scene.lights.length, Math.trunc(milliseconds), frameCount])
 
         device.queue.writeBuffer(
             pipelineObj.infoBuffer,
@@ -305,6 +352,7 @@ async function run(){
 
         // then draw
         draw(device, context, pipelineObj)
+        frameCount += 1
         requestAnimationFrame(frame)
     }
     frame()
@@ -321,8 +369,19 @@ async function run(){
             usage: GPUTextureUsage.RENDER_ATTACHMENT,
         })
         pipelineObj.depthView = pipelineObj.depthTexture.createView()
+
+        
+        //device.queue.onSubmittedWorkDone().then(() => pipelineObj.lastFrameTexture.destroy())
+
+        pipelineObj.lastFrameTexture = device.createTexture({
+            size, format,
+            usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+        })
+        pipelineObj.lastFrameView = pipelineObj.lastFrameTexture.createView()
+
         // update aspect
         aspect = size.width/ size.height
+        frameCount = 0
     })
 }
 run()

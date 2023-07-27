@@ -153,7 +153,7 @@ let lightRefractionScene = {
     ]
 }
 
-const scene = lightRefractionScene
+const scene = drakDiffuseScene// lightRefractionScene
 
 const sphereByteLength = 32 //1 * 3 * 4 + 2 * 4; //1 vec3 of floats and 2 single variables;
 const materialByteLength = 16*4

@@ -524,6 +524,7 @@ fn main(
     var write_index = vec2<i32>(GlobalInvocationID.xy);
     write_index.y = work_size_y * dispatch_y - write_index.y - 1;
 
+    workgroupBarrier();
     let uv_color = vec4(uv, sin(time), 1.0);
     textureStore(outTexture, write_index, pixel_color);
 }
