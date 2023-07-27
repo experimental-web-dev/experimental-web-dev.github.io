@@ -1,5 +1,5 @@
 import basicVert from './shaders/myRaytracingShader.vert.wgsl?raw'
-import positionFrag from './shaders/myRaytracingShader.frag.wgsl?raw'
+import raytracingFrag from './shaders/myRaytracingShader.frag.wgsl?raw'
 import * as cube from './util/screen'
 import * as scene from './util/scene'
 
@@ -55,7 +55,7 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
         },
         fragment: {
             module: device.createShaderModule({
-                code: positionFrag,
+                code: raytracingFrag,
             }),
             entryPoint: 'main',
             targets: [
@@ -225,7 +225,7 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
 }
 
 // create & submit device commands
-function draw(
+async function draw(
     device: GPUDevice, 
     context: GPUCanvasContext,
     pipelineObj: {
@@ -248,11 +248,12 @@ function draw(
 ) {
     // start encoder
     const commandEncoder = device.createCommandEncoder()
+
     const renderPassDescriptor: GPURenderPassDescriptor = {
         colorAttachments: [
             {
                 view: context.getCurrentTexture().createView(),
-                clearValue: { r: 0, g: 0, b: 0, a: 1.0 },
+                clearValue: { r: 0.0, g: 0.0, b: 0, a: 1.0 },
                 loadOp: 'clear',
                 storeOp: 'store'
             }
@@ -280,10 +281,18 @@ function draw(
 
     // webgpu run in a separate process, all the commands will be executed after submit
     device.queue.submit([commandEncoder.finish()])
+    //device.queue.onSubmittedWorkDone().then(() => {
+    //    device.queue.copyExternalImageToTexture(
+    //        {source: context.canvas},// pipelineObj.offscreenTexture},
+    //        {texture: pipelineObj.lastFrameTexture},
+    //        [pipelineObj.lastFrameTexture.width, pipelineObj.lastFrameTexture.height]
+    //    )
+    //})
+    
     device.queue.copyExternalImageToTexture(
         {source: context.canvas},// pipelineObj.offscreenTexture},
         {texture: pipelineObj.lastFrameTexture},
-        [context.canvas.width, context.canvas.height]
+        [pipelineObj.lastFrameTexture.width, pipelineObj.lastFrameTexture.height]
     )
 }
 
@@ -298,13 +307,11 @@ async function run(){
     // start loop
     const startTime = Date.now()
     let frameCount = 0
-    function frame(){
+    async function frame(){
         // rotate by time, and update transform matrix
         const milliseconds = Date.now() - startTime;
         const now = (Date.now() - startTime) / 1000
         const info = new Float32Array([now, aspect, size.width, size.height])
-        //console.log(`frame size ${size.width}, ${size.height}`)
-        //console.log(`last_frame size ${pipelineObj.lastFrameTexture.width}, ${pipelineObj.lastFrameTexture.height}`)
         
         const uInfo = new Uint32Array([scene.scene.spheres.length, scene.scene.lights.length, Math.trunc(milliseconds), frameCount])
 
@@ -350,9 +357,20 @@ async function run(){
             scene.getCamera()
         )
 
+        if (context.canvas.width != pipelineObj.lastFrameTexture.width || 
+            context.canvas.height != pipelineObj.lastFrameTexture.height) {
+                console.error(`Dimensions don't match ${context.canvas.width}, ${pipelineObj.lastFrameTexture.width}`)         
+        } else {
+        }
+
         // then draw
         draw(device, context, pipelineObj)
+
         frameCount += 1
+        if (frameCount > 600) {
+            frameCount = 0;
+        }
+
         requestAnimationFrame(frame)
     }
     frame()
@@ -361,6 +379,12 @@ async function run(){
     window.addEventListener('resize', ()=>{
         size.width = canvas.width = canvas.clientWidth * devicePixelRatio
         size.height = canvas.height = canvas.clientHeight * devicePixelRatio
+        // update aspect
+        aspect = size.width/ size.height
+        frameCount = 0
+
+        //context.configure()
+
         // don't need to recall context.configure() after v104
         // re-create depth texture
         pipelineObj.depthTexture.destroy()
@@ -370,18 +394,28 @@ async function run(){
         })
         pipelineObj.depthView = pipelineObj.depthTexture.createView()
 
-        
-        //device.queue.onSubmittedWorkDone().then(() => pipelineObj.lastFrameTexture.destroy())
-
+        pipelineObj.lastFrameTexture.destroy()
+    
         pipelineObj.lastFrameTexture = device.createTexture({
             size, format,
             usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
         })
         pipelineObj.lastFrameView = pipelineObj.lastFrameTexture.createView()
 
-        // update aspect
-        aspect = size.width/ size.height
-        frameCount = 0
+        pipelineObj.lastFrameGroup = device.createBindGroup({
+            label: 'Frame Group',
+            layout: pipelineObj.pipeline.getBindGroupLayout(1),
+            entries:[
+                {
+                    binding: 0,
+                    resource: pipelineObj.sampler
+                },
+                {
+                    binding: 1,
+                    resource: pipelineObj.lastFrameView
+                }
+            ]
+        })
     })
 }
 run()

@@ -1,3 +1,4 @@
+
 let drakDiffuseScene = {
     skyGradient_1: {x: 0.0, y: 0.0, z: 0.0},
     skyGradient_2: {x: 0.0, y: 0.0, z: 0.0},
@@ -10,7 +11,13 @@ let drakDiffuseScene = {
         fov: 120.0,
     },
     lights: [
-
+        {
+            position: {x: 0.0, y: 10.0, z: 0.0},
+            radius: 0.1,
+            color: {r: 1.0, g: 1.0, b: 1.0},
+            intensity: 0.0,
+            fallout: {c1: 0.1, c2: 0.01}, //companion constants to linear and quadratic terms
+        },
     ],
     spheres: [
         {
@@ -153,7 +160,13 @@ let lightRefractionScene = {
     ]
 }
 
-const scene = drakDiffuseScene// lightRefractionScene
+let scene = lightRefractionScene
+var option = 2;
+if (option == 1) {
+    scene = lightRefractionScene;
+} else {
+    scene = drakDiffuseScene;
+}
 
 const sphereByteLength = 32 //1 * 3 * 4 + 2 * 4; //1 vec3 of floats and 2 single variables;
 const materialByteLength = 16*4

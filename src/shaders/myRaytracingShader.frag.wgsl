@@ -504,8 +504,10 @@ fn main(
     let height = info[3];
     
     let camera_distance = camera_setup.position.z;
-    var camera = create_camera(camera_setup.position, camera_setup.look_target, camera_setup.fov);
-    //camera.position = vec3(camera_distance * sin(time), camera_setup.position.y, camera_distance * cos(time));
+    let camera_position = camera_setup.position;
+    //let camera_position = vec3(camera_distance * sin(time), camera_setup.position.y, camera_distance * cos(time));
+
+    let camera = create_camera(camera_position, camera_setup.look_target, camera_setup.fov);
 
     let obj_count = u_info[0];
     let light_count = u_info[1];
@@ -517,14 +519,6 @@ fn main(
 
     let texture_uv = vec2(fragUV.x, 1.0 - fragUV.y);
     let frame_dimensions = textureDimensions(last_frame);
-
-    //if (u32(frame_dimensions.x) != u32(round(width)) || u32(frame_dimensions.y) != u32(round(height))) {
-    //    //return vec4(color, 1.0);
-    //}
-//
-    //if (frame_count < 60u){
-    //    return vec4(color, 1.0);
-    //}
 
     let last_pixel = textureSampleLevel(
         last_frame,
@@ -538,8 +532,5 @@ fn main(
 
     let final_color = last_frame_value * last_pixel + frame_value * color;
 
-    let f = f32(frame_count) / 60.0;
-
-    //return vec4(f);
     return vec4(final_color, 1.0);
 }
