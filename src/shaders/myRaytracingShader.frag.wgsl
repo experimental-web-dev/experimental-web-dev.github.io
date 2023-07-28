@@ -181,7 +181,7 @@ fn min_element_wise(vector:vec3<f32>, m:f32) -> vec3<f32>{
     );
 }
 
-fn stack_raytracing(sphere_count:u32, light_count:u32, ray:Ray) -> vec3<f32>{
+fn stack_raytracing(sphere_count:u32, light_count:u32, ray:Ray, ray_seed:u32) -> vec3<f32>{
     const stack_size = 10u;
     var stack:array<RayStack, stack_size>;
     var stack_pointer = 0u;
@@ -189,13 +189,7 @@ fn stack_raytracing(sphere_count:u32, light_count:u32, ray:Ray) -> vec3<f32>{
     stack[stack_pointer].ray = ray;
     stack[stack_pointer].color = vec3(0.0, 0.0, 0.0);
 
-    let helper_seed = u32(abs(10000.0 * ray.direction.x + 908721.0 * ray.direction.y + 12735758.0 * ray.direction.z));
-    var seed = u_info[2] + helper_seed;
-    seed = random(seed);
-    seed = random(seed);
-    seed = random(seed);
-
-    //return rand01_f32(seed).value * vec3<f32>(1.0, 1.0, 1.0) + 0.0;
+    var seed = ray_seed;
 
     // Start Stack Loop
     loop {
@@ -475,17 +469,41 @@ fn random_in_unit_vector(seed:u32) -> Vec3RandomSeed {
     return v;
 }
 
+fn make_seed(x:f32, y:f32) -> u32 {
+    let v = normalize(vec3(x, y, 1.0));
+    let helper_seed = u32(abs(10000.0 * v.x + 908721.0 * v.y + 12735758.0 * v.z));
+    var seed = u_info[2] + helper_seed;
+    seed = random(seed);
+    seed = random(seed);
+    return random(seed);
+}
+
 fn raytracing(camera:Camera, uv:vec2<f32>, width:f32, height:f32, obj_count:u32, light_count:u32, rays_per_pixel:u32) -> vec3<f32>{
     // Many possible otimizations here, not the time yet
     let fov = tan(camera.fov / 180.0 * 3.1514 / 2.0);
-    let x = fov * uv.x * (width / 2.0) / width;
-    let y = fov * uv.y * (height / 2.0) / width;
+    var x = fov * uv.x * (width / 2.0) / width;
+    var y = fov * uv.y * (height / 2.0) / width;
+    let pixel_width = 0.5 / width;
+    let pixel_height = 0.5 / height;
+
+    var rand = rand_f32(make_seed(x, y));
+    let pixel_x_offset = pixel_width * rand.value;
+    rand = rand_f32(rand.seed);
+    let pixel_y_offset = pixel_height * rand.value;
+
+    x = x + pixel_x_offset;
+    y = y + pixel_y_offset;
+
+    //return vec3(rand.value); // if you want to visualize the seeds result
+
     let ray = Ray(camera.position, normalize(camera.forward + x * camera.right + y * camera.up));
 
+    var seed = rand.seed;
     var color = vec3<f32>(0.0, 0.0, 0.0);
     for (var i = 0u; i < rays_per_pixel; i = i + 1u) {
         let ray = Ray(camera.position, normalize(camera.forward + x * camera.right + y * camera.up));
-        color += stack_raytracing(obj_count, light_count, ray);
+        color += stack_raytracing(obj_count, light_count, ray, seed);
+        seed = random(seed);
     }
 
     return color / f32(rays_per_pixel);
