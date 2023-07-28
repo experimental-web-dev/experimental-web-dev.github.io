@@ -375,6 +375,39 @@ async function run(){
     }
     frame()
 
+    function colorToRGB (color:string) {
+        return {
+            r: +('0x' + color.slice(1, 3)) / 255,
+            g: +('0x' + color.slice(3, 5)) / 255,
+            b: +('0x' + color.slice(5, 7)) / 255,
+        }
+    }
+
+    let emissiveSphere = {
+        id: 1,
+        color: () => {
+            const color = (document.querySelector('.emission input[type="color"]') as HTMLInputElement).value
+            return colorToRGB(color)
+        },
+        intensity: () => {
+            const intensity = +(document.querySelector('.emission input[type="range"]') as HTMLInputElement).value
+            return intensity
+        },
+        update: function () {
+            scene.scene.materials[this.id].emission.r = this.intensity() * this.color().r
+            scene.scene.materials[this.id].emission.g = this.intensity() * this.color().g
+            scene.scene.materials[this.id].emission.b = this.intensity() * this.color().b
+        }
+    }
+
+    document.querySelector('input[type="color"]')?.addEventListener('input', () => {
+        emissiveSphere.update()
+    })
+
+    document.querySelector('input[type="range"]')?.addEventListener('input', () => {
+        emissiveSphere.update()
+    })
+
     // re-configure context on resize
     window.addEventListener('resize', ()=>{
         size.width = canvas.width = canvas.clientWidth * devicePixelRatio

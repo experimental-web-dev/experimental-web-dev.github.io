@@ -26,10 +26,31 @@
            height: 100%;
            aspect-ratio: auto;
         }
+        .inputs {
+            position: fixed;
+            top: 1em;
+            right: 1em;
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+            text-align: right;
+            width: 100px;
+        }
+        input{
+            width: 100%;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
     <canvas></canvas>
+    <div class="inputs">
+        <div class="emission">
+            <p>Emission</p>
+            <input type="color" title="Emissive Color" value="#FFFF00"/>
+            <input type="range" title="Emissive Intensity" min="0.0" max="2.0" step="0.1" value="1.0"/>
+        </div>
+    </div>
     <script type="module" src="../src/myRaytracingShader.ts"></script>
 </body>
 </html>
