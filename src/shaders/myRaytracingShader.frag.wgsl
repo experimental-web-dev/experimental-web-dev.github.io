@@ -417,6 +417,13 @@ fn skybox(ray:Ray) -> vec3<f32>{
 
 fn random(seed:u32) -> u32{
     return 1664525u * seed + 1013904223u;
+    //return PCG_Hash(seed);
+}
+
+fn PCG_Hash(seed:u32) -> u32 {
+    let state = seed * 747796405u + 2891336453u;
+    let word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+    return (word>>22u) ^ word;
 }
 
 struct FloatRandomSeed{
@@ -471,8 +478,8 @@ fn random_in_unit_vector(seed:u32) -> Vec3RandomSeed {
 
 fn make_seed(x:f32, y:f32) -> u32 {
     let v = normalize(vec3(x, y, 1.0));
-    let helper_seed = u32(abs(10000.0 * v.x + 908721.0 * v.y + 12735758.0 * v.z));
-    var seed = u_info[2] + helper_seed;
+    let helper_seed = u32(abs(10100.1 * v.x + 908721.0 * v.y + 12735758.0 * v.z));
+    var seed = u_info[2] * 137u + helper_seed;
     seed = random(seed);
     seed = random(seed);
     return random(seed);
