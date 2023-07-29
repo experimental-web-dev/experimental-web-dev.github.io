@@ -63,4 +63,16 @@ function getProjectionMatrix(
     return projectionMatrix as Float32Array
 }
 
-export { getMvpMatrix, getModelViewMatrix, getProjectionMatrix }
+function normalize(v:{x:number, y:number}) {
+    const length = Math.sqrt(v.x * v.x + v.y * v.y)
+    if (length == 0) {
+        return v;
+    }
+
+    return {
+        x: v.x/length,
+        y: v.y/length
+    }
+}
+
+export { getMvpMatrix, getModelViewMatrix, getProjectionMatrix, normalize}

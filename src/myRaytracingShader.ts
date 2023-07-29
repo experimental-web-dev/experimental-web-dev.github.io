@@ -2,6 +2,7 @@ import basicVert from './shaders/myRaytracingShader.vert.wgsl?raw'
 import raytracingFrag from './shaders/myRaytracingShader.frag.wgsl?raw'
 import * as cube from './util/screen'
 import * as scene from './util/scene'
+import { normalize } from './util/math'
 
 // initialize webgpu device & config canvas context
 async function initWebGPU(canvas: HTMLCanvasElement) {
@@ -302,12 +303,82 @@ async function run(){
         throw new Error('No Canvas')
     const {device, context, format, size} = await initWebGPU(canvas)
     const pipelineObj = await initPipeline(device, format, size)
-    // default state
     let aspect = size.width/ size.height
+    
     // start loop
     const startTime = Date.now()
     let frameCount = 0
+    //let targetFPS = 60
+    let lastFrameTime = 0
+    let slowRate = 1
+    let slowCount = 0
+    const input = {
+        pressedKeys: new Set(),
+        cameraSpeed: 3.0,
+        direction: {x: 0.0, y: 0.0},
+        mouse:{
+            movementX: 0.0,
+            movementY: 0.0,
+            rotate: false,
+            previousX: 0.0,
+            previousY: 0.0,
+            sensibility: 0.15
+        }
+    }
+    scene.setCamera()
+
     async function frame(){
+        const deltaTime = (Date.now() - lastFrameTime) / 1000;
+        handleInput(deltaTime)
+        lastFrameTime = Date.now()
+
+        if (slowCount % slowRate === 0) {
+            renderFrame()
+        }
+        slowCount++
+
+        requestAnimationFrame(frame)
+    }
+    frame()
+
+    function isKeyPressed(key:string) {
+        return input.pressedKeys.has(key);
+    }
+
+    function handleInput(deltaTime:number){
+        input.direction.x = 0
+        input.direction.y = 0
+
+        if (isKeyPressed('w')) {
+            input.direction.y += 1.0
+            frameCount = 0
+        }
+        if (isKeyPressed('s')) {
+            input.direction.y -= 1.0
+            frameCount = 0
+        }
+        if (isKeyPressed('a')) {
+            input.direction.x -= 1.0
+            frameCount = 0
+        }
+        if (isKeyPressed('d')) {
+            input.direction.x += 1.0
+            frameCount = 0
+        }
+        if (input.mouse.rotate) {
+            
+        }
+        
+        if (frameCount === 0) {
+            input.direction = normalize(input.direction)
+            input.direction.x *= deltaTime * input.cameraSpeed
+            input.direction.y *= deltaTime * input.cameraSpeed
+            scene.moveCamera(input.direction)
+            //console.log(input.direction)
+        }
+    }
+
+    async function renderFrame(){
         // rotate by time, and update transform matrix
         const milliseconds = Date.now() - startTime;
         const now = (Date.now() - startTime) / 1000
@@ -371,9 +442,8 @@ async function run(){
             frameCount = 0;
         }
 
-        requestAnimationFrame(frame)
+        //requestAnimationFrame(frame)
     }
-    frame()
 
     function colorToRGB (color:string) {
         return {
@@ -399,13 +469,37 @@ async function run(){
             scene.scene.materials[this.id].emission.b = this.intensity() * this.color().b
         }
     }
+    emissiveSphere.update();
 
-    document.querySelector('input[type="color"]')?.addEventListener('input', () => {
+    document.querySelector('.emission input[type="color"]')?.addEventListener('input', () => {
         emissiveSphere.update()
     })
 
-    document.querySelector('input[type="range"]')?.addEventListener('input', () => {
+    document.querySelector('.emission input[type="range"]')?.addEventListener('input', () => {
         emissiveSphere.update()
+    })
+
+    window.addEventListener('keydown', event => {
+        input.pressedKeys.add(event.key)
+    })
+
+    window.addEventListener('keyup', event => {
+        input.pressedKeys.delete(event.key)
+    })
+
+    window.addEventListener('mousemove', event => {
+        input.mouse.movementX = event.offsetX - input.mouse.previousX;
+        input.mouse.movementY = event.offsetY - input.mouse.previousY;
+        input.mouse.previousX = event.offsetX
+        input.mouse.previousY = event.offsetY
+
+        console.log(input.mouse.movementX)
+        input.mouse.rotate = (event.ctrlKey);
+
+        if (input.mouse.rotate) {
+            scene.rotateCamera({x: 0, y: -input.mouse.sensibility * input.mouse.movementX})
+            frameCount = 0
+        }
     })
 
     // re-configure context on resize

@@ -40,16 +40,59 @@
             width: 100%;
             margin: 0;
         }
+        .input-value {
+            display: flex;
+            flex-direction: row;
+        }
     </style>
 </head>
 <body>
     <canvas></canvas>
     <div class="inputs">
-        <div class="emission">
-            <p>Emission</p>
-            <input type="color" title="Emissive Color" value="#FFFF00"/>
-            <input type="range" title="Emissive Intensity" min="0.0" max="2.0" step="0.1" value="1.0"/>
-        </div>
+        <section>
+            <div>
+                <h5>Global</h5>
+                <p>FPS Slow Down</p>
+                <div class="input-value">
+                    <input type="range" title="Frame Rate Slow Down" min="1.0" max="10.0" step="1.0" value="2.0"/>
+                    <p class="value">2.0</p>
+                </div>
+                <div class="input-value">
+                    <input type="checkbox" id="check" class="toggle" checked>
+                    <label for="check">Frame Accumulator</label>
+                </div>
+            </div>
+        </section>
+        <section>
+            <h5>Illumination</h5>
+            <div class="light">
+                <p>Light</p>
+                <input type="color" title="Light Color" value="#FFFFFF"/>
+                <div class="input-value">
+                    <input type="range" title="Light Intensity" min="0.0" max="2.0" step="0.1" value="1.0"/>
+                    <p>1.0</p>
+                </div>
+            </div>
+            <div class="emission">
+                <p>Emission</p>
+                <input type="color" title="Emissive Color" value="#FFFF00"/>
+                <div class="input-value">
+                    <input type="range" title="Emissive Intensity" min="0.0" max="2.0" step="0.1" value="1.0"/>
+                    <p>1.0</p>
+                </div>
+            </div>
+        </section>
+        <section>
+            <h5>Material</h5>
+            <div class="material">
+                <select name="Material Type">
+                    <option value="Diffuse" selected>Diffuse</option>
+                    <option value="Glass">Glass</option>
+                    <option value="Metal">Metal</option>
+                </select>
+            </div>
+        </section>
+
     </div>
     <script type="module" src="../src/myRaytracingShader.ts"></script>
 </body>
