@@ -315,6 +315,7 @@ async function run(){
     const input = {
         pressedKeys: new Set(),
         cameraSpeed: 3.0,
+        fastCameraSpeed: 9.0,
         direction: {x: 0.0, y: 0.0},
         mouse:{
             movementX: 0.0,
@@ -348,6 +349,7 @@ async function run(){
     function handleInput(deltaTime:number){
         input.direction.x = 0
         input.direction.y = 0
+        let speed = input.cameraSpeed
 
         if (isKeyPressed('w')) {
             input.direction.y += 1.0
@@ -365,16 +367,16 @@ async function run(){
             input.direction.x += 1.0
             frameCount = 0
         }
-        if (input.mouse.rotate) {
-            
+        if (isKeyPressed('shift')) {
+            speed = input.fastCameraSpeed
         }
+        //console.log(input.pressedKeys)
         
         if (frameCount === 0) {
             input.direction = normalize(input.direction)
-            input.direction.x *= deltaTime * input.cameraSpeed
-            input.direction.y *= deltaTime * input.cameraSpeed
+            input.direction.x *= deltaTime * speed
+            input.direction.y *= deltaTime * speed
             scene.moveCamera(input.direction)
-            //console.log(input.direction)
         }
     }
 
@@ -480,11 +482,11 @@ async function run(){
     })
 
     window.addEventListener('keydown', event => {
-        input.pressedKeys.add(event.key)
+        input.pressedKeys.add(event.key.toLowerCase())
     })
 
     window.addEventListener('keyup', event => {
-        input.pressedKeys.delete(event.key)
+        input.pressedKeys.delete(event.key.toLowerCase())
     })
 
     window.addEventListener('mousemove', event => {
@@ -493,11 +495,14 @@ async function run(){
         input.mouse.previousX = event.offsetX
         input.mouse.previousY = event.offsetY
 
-        console.log(input.mouse.movementX)
-        input.mouse.rotate = (event.ctrlKey);
+        //console.log(input.mouse.movementX)
+        input.mouse.rotate = (event.buttons === 1);
 
         if (input.mouse.rotate) {
-            scene.rotateCamera({x: 0, y: -input.mouse.sensibility * input.mouse.movementX})
+            if (Math.abs(input.mouse.movementX) > 10 || Math.abs(input.mouse.movementY) > 10){
+                return
+            }
+            scene.rotateCamera({x: -input.mouse.sensibility * input.mouse.movementY, y: -input.mouse.sensibility * input.mouse.movementX})
             frameCount = 0
         }
     })

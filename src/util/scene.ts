@@ -1,4 +1,5 @@
-import { glMatrix, vec3 } from 'gl-matrix'
+import { glMatrix, vec2, vec3 } from 'gl-matrix'
+import { normalize } from './math'
 
 let drakDiffuseScene = {
     skyGradient_1: {x: 0.0, y: 0.0, z: 0.0},
@@ -175,7 +176,7 @@ function setCamera() {
 
     const position = toVec3(camera.position)
     const target = toVec3(camera.lookAtTarget)
-    const up = toVec3(camera.up)
+    const up = vec3.fromValues(0.0, 1.0, 0.0)
     const forward = vec3.create()
     const right = vec3.create()
 
@@ -207,40 +208,47 @@ function moveCamera(direction:{x:number, y:number}) {
 
 function rotateCamera(rotation:{x:number, y:number}) {
     const camera = scene.camera
+    const zero = vec3.create();
 
     const forward = toVec3(camera.forward)
-    vec3.rotateY(forward, forward, vec3.create(), glMatrix.toRadian(rotation.y))
+    vec3.rotateY(forward, forward, zero, glMatrix.toRadian(rotation.y))
 
     const position = toVec3(camera.position)
-    const target = vec3.create();
+    let target = vec3.create();
     vec3.add(target, position, forward);
 
     camera.lookAtTarget = fromVec3(target)
     setCamera()
 
-    //const rotationAxis = vec3.fromValues(0, 1, 0)
+    const forwardXZ = vec3.fromValues(forward[0], 0.0, forward[2])
+    //console.log( fromVec3(forwardXZ))
 
-    // Convert the angle to radians (if not already in radians)
-    //const angleInDegrees = rotation.y
-    //const angleInRadians = glMatrix.toRadian(angleInDegrees)
+    vec3.normalize(forwardXZ, forwardXZ)
+    let angleY = vec3.angle(forwardXZ, vec3.fromValues(0.0, 0.0, 1.0))
 
-    // Decompose the rotation axis into its components
-    //const [axisX, axisY, axisZ] = rotationAxis;
+    const rotatedVector = vec3.create()
+    vec3.rotateY(rotatedVector, forwardXZ, zero, angleY)
+    if (rotatedVector[2] < 0.999) {
+        angleY = -angleY
+        vec3.rotateY(rotatedVector, forwardXZ, zero, angleY)
+    }
 
-    // Perform individual rotations
-    //const rotatedVector = vec3.create();
-    //vec3.rotateX(rotatedVector, vectorToRotate, vec3.create(), -angleInRadians * axisY);
-    //vec3.rotateY(rotatedVector, rotatedVector, vec3.create(), angleInRadians * axisX);
-    //vec3.rotateZ(rotatedVector, rotatedVector, vec3.create(), angleInRadians * axisY);
-//
-    //camera.forward = fromVec3(rotatedVector)
-//
-    //const position = toVec3(camera.position)
-    //const target = vec3.create();
-    //vec3.add(target, position, rotatedVector)
-    //camera.lookAtTarget = fromVec3(target)
-//
-    //console.log('Rotated vector:', rotatedVector); // Output: [0, 0, -1] (90-degree rotation around Y-axis)
+    //console.log(angleY/3.14159 * 180)
+    //console.log( fromVec3(rotatedVector))
+
+    const transformedForward = vec3.create()
+    vec3.rotateY(transformedForward, forward, zero, angleY)
+    vec3.rotateX(transformedForward, transformedForward, zero, glMatrix.toRadian(rotation.x))
+    vec3.rotateY(transformedForward, transformedForward, zero, -angleY)
+
+    if (Math.abs(transformedForward[1]) > 0.8) {
+        // Angle too extreme
+        return
+    }
+
+    vec3.add(target, position, transformedForward);
+    camera.lookAtTarget = fromVec3(target)
+    setCamera()
 }
 
 let scene = lightRefractionScene
