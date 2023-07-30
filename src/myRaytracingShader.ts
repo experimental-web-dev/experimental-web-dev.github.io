@@ -116,7 +116,7 @@ async function initPipeline(device: GPUDevice, format: GPUTextureFormat, size: {
 
     const uInfoBuffer = device.createBuffer({
         label: 'Render info as unsigned int',
-        size: 4 * 4, // 4 x uint32
+        size: 8 * 4, // 8 x uint32
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     })
 
@@ -307,11 +307,16 @@ async function run(){
     
     // start loop
     const startTime = Date.now()
-    let frameCount = 0
     //let targetFPS = 60
     let lastFrameTime = 0
-    let slowRate = 1
-    let slowCount = 0
+    const global = {
+        frameAccumulator: true,
+        frameCount: 0,
+        raysPerPixel: 1,
+        frameRateSlowDown: 2,
+        slowCount: 0,
+    }
+
     const input = {
         pressedKeys: new Set(),
         cameraSpeed: 3.0,
@@ -333,52 +338,14 @@ async function run(){
         handleInput(deltaTime)
         lastFrameTime = Date.now()
 
-        if (slowCount % slowRate === 0) {
+        if (global.slowCount % global.frameRateSlowDown === 0) {
             renderFrame()
         }
-        slowCount++
+        global.slowCount++
 
         requestAnimationFrame(frame)
     }
     frame()
-
-    function isKeyPressed(key:string) {
-        return input.pressedKeys.has(key);
-    }
-
-    function handleInput(deltaTime:number){
-        input.direction.x = 0
-        input.direction.y = 0
-        let speed = input.cameraSpeed
-
-        if (isKeyPressed('w')) {
-            input.direction.y += 1.0
-            frameCount = 0
-        }
-        if (isKeyPressed('s')) {
-            input.direction.y -= 1.0
-            frameCount = 0
-        }
-        if (isKeyPressed('a')) {
-            input.direction.x -= 1.0
-            frameCount = 0
-        }
-        if (isKeyPressed('d')) {
-            input.direction.x += 1.0
-            frameCount = 0
-        }
-        if (isKeyPressed('shift')) {
-            speed = input.fastCameraSpeed
-        }
-        //console.log(input.pressedKeys)
-        
-        if (frameCount === 0) {
-            input.direction = normalize(input.direction)
-            input.direction.x *= deltaTime * speed
-            input.direction.y *= deltaTime * speed
-            scene.moveCamera(input.direction)
-        }
-    }
 
     async function renderFrame(){
         // rotate by time, and update transform matrix
@@ -386,7 +353,8 @@ async function run(){
         const now = (Date.now() - startTime) / 1000
         const info = new Float32Array([now, aspect, size.width, size.height])
         
-        const uInfo = new Uint32Array([scene.scene.spheres.length, scene.scene.lights.length, Math.trunc(milliseconds), frameCount])
+        const uInfo = new Uint32Array([scene.scene.spheres.length, scene.scene.lights.length, Math.trunc(milliseconds),
+            global.frameCount, global.raysPerPixel])
 
         device.queue.writeBuffer(
             pipelineObj.infoBuffer,
@@ -439,12 +407,54 @@ async function run(){
         // then draw
         draw(device, context, pipelineObj)
 
-        frameCount += 1
-        if (frameCount > 600) {
-            frameCount = 0;
+        if (global.frameAccumulator) {
+            global.frameCount += 1
+            if (global.frameCount >= 600) {
+                global.frameCount = 0
+            }
+        } else {
+            global.frameCount = 0
         }
 
         //requestAnimationFrame(frame)
+    }
+
+    function isKeyPressed(key:string) {
+        return input.pressedKeys.has(key);
+    }
+
+    function handleInput(deltaTime:number){
+        input.direction.x = 0
+        input.direction.y = 0
+        let speed = input.cameraSpeed
+
+        if (isKeyPressed('w')) {
+            input.direction.y += 1.0
+            global.frameCount = 0
+        }
+        if (isKeyPressed('s')) {
+            input.direction.y -= 1.0
+            global.frameCount = 0
+        }
+        if (isKeyPressed('a')) {
+            input.direction.x -= 1.0
+            global.frameCount = 0
+        }
+        if (isKeyPressed('d')) {
+            input.direction.x += 1.0
+            global.frameCount = 0
+        }
+        if (isKeyPressed('shift')) {
+            speed = input.fastCameraSpeed
+        }
+        //console.log(input.pressedKeys)
+        
+        if (global.frameCount === 0) {
+            input.direction = normalize(input.direction)
+            input.direction.x *= deltaTime * speed
+            input.direction.y *= deltaTime * speed
+            scene.moveCamera(input.direction)
+        }
     }
 
     function colorToRGB (color:string) {
@@ -494,6 +504,7 @@ async function run(){
             scene.scene.skyGradient_2 = horizon
         }
     }
+    skybox.update()
 
     let light = {
         id: 0,
@@ -507,6 +518,7 @@ async function run(){
             scene.scene.lights[this.id].intensity = intensity
         }
     }
+    light.update()
 
     document.getElementById('skybox-sky')?.addEventListener('input', () => {
         skybox.update()
@@ -528,11 +540,24 @@ async function run(){
         light.update()
     })
 
+    document.getElementById('accumulator')?.addEventListener('input', event => {
+        global.frameAccumulator = (event.target as HTMLInputElement).checked
+        global.frameCount = 0
+    })
+
+    document.getElementById('fps-rate')?.addEventListener('input', event => {
+        global.frameRateSlowDown = parseFloat((event.target as HTMLInputElement).value)
+    })
+
+    document.getElementById('rays-per-pixel')?.addEventListener('input', event => {
+        global.raysPerPixel = parseInt((event.target as HTMLInputElement).value)
+    })
+
     window.addEventListener('keydown', event => {
         input.pressedKeys.add(event.key.toLowerCase())
         if (event.key.toLocaleLowerCase() == 'r') {
             scene.resetCamera()
-            frameCount = 0
+            global.frameCount = 0
         }
     })
 
@@ -555,7 +580,7 @@ async function run(){
                 return
             }
             scene.rotateCamera({x: -input.mouse.sensibility * input.mouse.movementY, y: -input.mouse.sensibility * input.mouse.movementX})
-            frameCount = 0
+            global.frameCount = 0
         }
     })
 
@@ -565,7 +590,7 @@ async function run(){
         size.height = canvas.height = canvas.clientHeight * devicePixelRatio
         // update aspect
         aspect = size.width/ size.height
-        frameCount = 0
+        global.frameCount = 0
 
         //context.configure()
 

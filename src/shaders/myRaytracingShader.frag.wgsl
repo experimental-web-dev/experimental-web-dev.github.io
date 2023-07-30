@@ -1,5 +1,5 @@
 @group(0) @binding(0) var<uniform> info : vec4<f32>;
-@group(0) @binding(1) var<uniform> u_info : vec4<u32>;
+@group(0) @binding(1) var<uniform> u_info : array<vec4<u32>,2>;
 @group(0) @binding(2) var<uniform> sky_gradient : array<vec4<f32>, 2>;
 @group(0) @binding(3) var<uniform> spheres_array : array<Sphere, 100>;
 @group(0) @binding(4) var<uniform> materials_array : array<Material, 100>;
@@ -479,7 +479,7 @@ fn random_in_unit_vector(seed:u32) -> Vec3RandomSeed {
 fn make_seed(x:f32, y:f32) -> u32 {
     let v = normalize(vec3(x, y, 1.0));
     let helper_seed = u32(abs(10100.1 * v.x + 908721.0 * v.y + 12735758.0 * v.z));
-    var seed = u_info[2] * 137u + helper_seed;
+    var seed = u_info[0][2] * 137u + helper_seed;
     seed = random(seed);
     seed = random(seed);
     return random(seed);
@@ -534,13 +534,14 @@ fn main(
 
     let camera = create_camera(camera_position, camera_setup.look_target, camera_setup.fov);
 
-    let obj_count = u_info[0];
-    let light_count = u_info[1];
+    let obj_count = u_info[0][0];
+    let light_count = u_info[0][1];
 
-    let color = raytracing(camera, uv, width, height, obj_count, light_count, 1u);
+    let rays_per_pixel = u_info[1][0];
+    let color = raytracing(camera, uv, width, height, obj_count, light_count, rays_per_pixel);
     
     // Calculate accumulator color
-    let frame_count = u_info[3];
+    let frame_count = u_info[0][3];
 
     let texture_uv = vec2(fragUV.x, 1.0 - fragUV.y);
     let frame_dimensions = textureDimensions(last_frame);
