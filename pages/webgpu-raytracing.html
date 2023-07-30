@@ -54,18 +54,8 @@
             position: fixed;
             bottom: 1em;
             white-space: nowrap;
-            pointer-events: none;
-            user-select: none;
         }
-        h5 {
-            pointer-events: none;
-            user-select: none;
-        }
-        label {
-            pointer-events: none;
-            user-select: none;
-        }
-        .property-title {
+        h5, label, .bottom, .value, .property-title{
             pointer-events: none;
             user-select: none;
         }
@@ -83,6 +73,11 @@
                         <input type="range" title="Frame Rate Slow Down" min="1.0" max="10.0" step="1.0" value="2.0"/>
                         <p class="value">2.0</p>
                     </div>
+                    <p class="property-title">Rays per Pixel</p>
+                    <div class="input-value">
+                        <input type="range" title="Rays per Pixel" min="1.0" max="20.0" step="1.0" value="1.0"/>
+                        <p class="value">1.0</p>
+                    </div>
                     <div class="input-value">
                         <input type="checkbox" id="check" class="toggle" checked>
                         <label for="check">Frame Accumulator</label>
@@ -96,7 +91,7 @@
                     <input type="color" title="Light Color" value="#FFFFFF"/>
                     <div class="input-value">
                         <input type="range" title="Light Intensity" min="0.0" max="2.0" step="0.1" value="1.0"/>
-                        <p>1.0</p>
+                        <p class="value">1.0</p>
                     </div>
                 </div>
                 <div class="emission">
@@ -104,7 +99,7 @@
                     <input type="color" title="Emissive Color" value="#FFFF00"/>
                     <div class="input-value">
                         <input type="range" title="Emissive Intensity" min="0.0" max="2.0" step="0.1" value="1.0"/>
-                        <p>1.0</p>
+                        <p class="value">1.0</p>
                     </div>
                 </div>
             </section>
