@@ -19,7 +19,7 @@
         }
         p {
             font-size: 14px;
-            margin:0
+            margin:0;
         }
         canvas {
            width: 100%;
@@ -55,7 +55,10 @@
             bottom: 1em;
             white-space: nowrap;
         }
-        h5, label, .bottom, .value, .property-title{
+        .property-title {
+            margin-top: 10px;
+        }
+        h5, label, .bottom, .value, .property-title {
             pointer-events: none;
             user-select: none;
         }
@@ -86,11 +89,20 @@
             </section>
             <section>
                 <h5>Illumination</h5>
+                <div class="skybox">
+                    <p class="property-title">Skybox</p>
+                    <input type="color" id="skybox-sky" title="Sky Color" value="#68EAF3"/>
+                    <input type="color" id="skybox-horizon" title="Horizon Color" value="#D8E4E4"/>
+                    <div class="input-value">
+                        <input type="range" title="Light Intensity" min="0.0" max="1.0" step="0.1" value="0.0"/>
+                        <p class="value">1.0</p>
+                    </div>
+                </div>
                 <div class="light">
                     <p class="property-title">Light</p>
                     <input type="color" title="Light Color" value="#FFFFFF"/>
                     <div class="input-value">
-                        <input type="range" title="Light Intensity" min="0.0" max="2.0" step="0.1" value="1.0"/>
+                        <input type="range" title="Light Intensity" min="0.0" max="2.0" step="0.1" value="0.0"/>
                         <p class="value">1.0</p>
                     </div>
                 </div>

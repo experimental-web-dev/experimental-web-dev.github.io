@@ -2,8 +2,8 @@ import { glMatrix, vec3 } from 'gl-matrix'
 import { toVec3, fromVec3 } from './math'
 
 let drakDiffuseScene = {
-    skyGradient_1: {x: 0.0, y: 0.0, z: 0.0},
-    skyGradient_2: {x: 0.0, y: 0.0, z: 0.0},
+    skyGradient_1: {r: 0.0, g: 0.0, b: 0.0},
+    skyGradient_2: {r: 0.0, g: 0.0, b: 0.0},
     camera: {
         position: {x: 0.0, y: 3.0, z: -5.0},
         lookAtTarget: {x: 0.0, y: 0.0, z: 0.0},
@@ -80,8 +80,8 @@ let drakDiffuseScene = {
 }
 
 let lightRefractionScene = {
-    skyGradient_1: {x: 0.67, y: 0.84, z: 0.97},
-    skyGradient_2: {x: 0.57, y: 0.63, z: 0.70},
+    skyGradient_1: {r: 0.67, g: 0.84, b: 0.97},
+    skyGradient_2: {r: 0.57, g: 0.63, b: 0.70},
     camera: {
         position: {x: 0.0, y: 1.1, z: -5.0},
         lookAtTarget: {x: 0.0, y: 0.0, z: 0.0},
@@ -270,8 +270,8 @@ const lightByteLength = 12*4
 
 const getSkyGradient = () => {
     return new Float32Array([
-        scene.skyGradient_1.x, scene.skyGradient_1.y, scene.skyGradient_1.z, 1.0,
-        scene.skyGradient_2.x, scene.skyGradient_2.y, scene.skyGradient_1.z, 1.0
+        scene.skyGradient_1.r, scene.skyGradient_1.g, scene.skyGradient_1.b, 1.0,
+        scene.skyGradient_2.r, scene.skyGradient_2.g, scene.skyGradient_1.b, 1.0
     ])
 }
 

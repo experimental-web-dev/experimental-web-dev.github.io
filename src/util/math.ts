@@ -83,4 +83,8 @@ function fromVec3(v:vec3) {
     return { x: v[0], y: v[1], z: v[2]}
 }
 
-export { getMvpMatrix, getModelViewMatrix, getProjectionMatrix, normalize, toVec3, fromVec3}
+function mult(value:number, v:{r:number, g:number, b:number}) {
+    return { r: value * v.r, g: value * v.g, b: value * v.b}
+}
+
+export { getMvpMatrix, getModelViewMatrix, getProjectionMatrix, normalize, toVec3, fromVec3, mult}

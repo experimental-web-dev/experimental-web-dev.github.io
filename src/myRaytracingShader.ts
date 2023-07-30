@@ -2,7 +2,7 @@ import basicVert from './shaders/myRaytracingShader.vert.wgsl?raw'
 import raytracingFrag from './shaders/myRaytracingShader.frag.wgsl?raw'
 import * as cube from './util/screen'
 import * as scene from './util/scene'
-import { normalize } from './util/math'
+import { normalize, mult } from './util/math'
 
 // initialize webgpu device & config canvas context
 async function initWebGPU(canvas: HTMLCanvasElement) {
@@ -466,9 +466,9 @@ async function run(){
             return intensity
         },
         update: function () {
-            scene.scene.materials[this.id].emission.r = this.intensity() * this.color().r
-            scene.scene.materials[this.id].emission.g = this.intensity() * this.color().g
-            scene.scene.materials[this.id].emission.b = this.intensity() * this.color().b
+            let intensity = this.intensity()
+            let color = this.color()
+            scene.scene.materials[this.id].emission = mult(intensity, color)
         }
     }
     emissiveSphere.update();
@@ -479,6 +479,53 @@ async function run(){
 
     document.querySelector('.emission input[type="range"]')?.addEventListener('input', () => {
         emissiveSphere.update()
+    })
+
+    let skybox = {
+        skyColor: document.getElementById('skybox-sky') as HTMLInputElement,
+        horizonColor: document.getElementById('skybox-horizon') as HTMLInputElement,
+        intensity: document.querySelector('.skybox input[type="range"]') as HTMLInputElement,
+        update: function () {    
+            let i = parseFloat(this.intensity.value)
+            let sky = mult(i, colorToRGB(this.skyColor.value))
+            let horizon = mult(i, colorToRGB(this.horizonColor.value))
+
+            scene.scene.skyGradient_1 = sky
+            scene.scene.skyGradient_2 = horizon
+        }
+    }
+
+    let light = {
+        id: 0,
+        colorElement: document.querySelector('.light input[type="color"]') as HTMLInputElement,
+        intensityElement: document.querySelector('.light input[type="range"]') as HTMLInputElement,
+        update: function () {
+            let intensity = parseFloat(this.intensityElement.value)
+            let color = colorToRGB(this.colorElement.value)
+
+            scene.scene.lights[this.id].color = color
+            scene.scene.lights[this.id].intensity = intensity
+        }
+    }
+
+    document.getElementById('skybox-sky')?.addEventListener('input', () => {
+        skybox.update()
+    })
+
+    document.getElementById('skybox-horizon')?.addEventListener('input', () => {
+        skybox.update()
+    })
+
+    document.querySelector('.skybox input[type="range"]')?.addEventListener('input', () => {
+        skybox.update()
+    })
+
+    document.querySelector('.light input[type="color"]')?.addEventListener('input', () => {
+        light.update()
+    })
+
+    document.querySelector('.light input[type="range"]')?.addEventListener('input', () => {
+        light.update()
     })
 
     window.addEventListener('keydown', event => {
