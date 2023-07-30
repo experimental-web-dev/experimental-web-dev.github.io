@@ -17,7 +17,7 @@
             flex-direction: column;
             justify-content: center;
         }
-        p{
+        p {
             font-size: 14px;
             margin:0
         }
@@ -26,17 +26,23 @@
            height: 100%;
            aspect-ratio: auto;
         }
-        .inputs {
+        .ui-main {
             position: fixed;
             top: 1em;
             right: 1em;
+            width: 100px;
+            transition: right 0.5s ease;
+        }
+        .ui-main.hidden {
+            right: -10em;
+        }
+        .inputs {
             display: flex;
             flex-direction: column;
             gap: 1em;
             text-align: right;
-            width: 100px;
         }
-        input{
+        input {
             width: 100%;
             margin: 0;
         }
@@ -44,56 +50,80 @@
             display: flex;
             flex-direction: row;
         }
+        .bottom {
+            position: fixed;
+            bottom: 1em;
+            white-space: nowrap;
+            pointer-events: none;
+            user-select: none;
+        }
+        h5 {
+            pointer-events: none;
+            user-select: none;
+        }
+        label {
+            pointer-events: none;
+            user-select: none;
+        }
+        .property-title {
+            pointer-events: none;
+            user-select: none;
+        }
     </style>
 </head>
 <body>
     <canvas></canvas>
-    <div class="inputs">
-        <section>
-            <div>
-                <h5>Global</h5>
-                <p>FPS Slow Down</p>
-                <div class="input-value">
-                    <input type="range" title="Frame Rate Slow Down" min="1.0" max="10.0" step="1.0" value="2.0"/>
-                    <p class="value">2.0</p>
+    <div class="ui-main">
+        <div class="inputs">
+            <section>
+                <div>
+                    <h5>Global</h5>
+                    <p class="property-title">FPS Slow Down</p>
+                    <div class="input-value">
+                        <input type="range" title="Frame Rate Slow Down" min="1.0" max="10.0" step="1.0" value="2.0"/>
+                        <p class="value">2.0</p>
+                    </div>
+                    <div class="input-value">
+                        <input type="checkbox" id="check" class="toggle" checked>
+                        <label for="check">Frame Accumulator</label>
+                    </div>
                 </div>
-                <div class="input-value">
-                    <input type="checkbox" id="check" class="toggle" checked>
-                    <label for="check">Frame Accumulator</label>
+            </section>
+            <section>
+                <h5>Illumination</h5>
+                <div class="light">
+                    <p class="property-title">Light</p>
+                    <input type="color" title="Light Color" value="#FFFFFF"/>
+                    <div class="input-value">
+                        <input type="range" title="Light Intensity" min="0.0" max="2.0" step="0.1" value="1.0"/>
+                        <p>1.0</p>
+                    </div>
                 </div>
-            </div>
-        </section>
-        <section>
-            <h5>Illumination</h5>
-            <div class="light">
-                <p>Light</p>
-                <input type="color" title="Light Color" value="#FFFFFF"/>
-                <div class="input-value">
-                    <input type="range" title="Light Intensity" min="0.0" max="2.0" step="0.1" value="1.0"/>
-                    <p>1.0</p>
+                <div class="emission">
+                    <p class="property-title">Emission</p>
+                    <input type="color" title="Emissive Color" value="#FFFF00"/>
+                    <div class="input-value">
+                        <input type="range" title="Emissive Intensity" min="0.0" max="2.0" step="0.1" value="1.0"/>
+                        <p>1.0</p>
+                    </div>
                 </div>
-            </div>
-            <div class="emission">
-                <p>Emission</p>
-                <input type="color" title="Emissive Color" value="#FFFF00"/>
-                <div class="input-value">
-                    <input type="range" title="Emissive Intensity" min="0.0" max="2.0" step="0.1" value="1.0"/>
-                    <p>1.0</p>
+            </section>
+            <section>
+                <h5>Material</h5>
+                <div class="material">
+                    <select name="Material Type">
+                        <option value="Diffuse" selected>Diffuse</option>
+                        <option value="Glass">Glass</option>
+                        <option value="Metal">Metal</option>
+                    </select>
                 </div>
-            </div>
-        </section>
-        <section>
-            <h5>Material</h5>
-            <div class="material">
-                <select name="Material Type">
-                    <option value="Diffuse" selected>Diffuse</option>
-                    <option value="Glass">Glass</option>
-                    <option value="Metal">Metal</option>
-                </select>
-            </div>
-        </section>
-
+            </section>
+        </div>
+        <div class="bottom">
+            <p>Press 'h' to hide</p>
+        </div>
     </div>
     <script type="module" src="../src/myRaytracingShader.ts"></script>
+    <script type="module" src="../src/raytracingAppUI.ts"></script>
 </body>
 </html>

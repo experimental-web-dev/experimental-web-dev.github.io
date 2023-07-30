@@ -1,5 +1,5 @@
-import { glMatrix, vec2, vec3 } from 'gl-matrix'
-import { normalize } from './math'
+import { glMatrix, vec3 } from 'gl-matrix'
+import { toVec3, fromVec3 } from './math'
 
 let drakDiffuseScene = {
     skyGradient_1: {x: 0.0, y: 0.0, z: 0.0},
@@ -163,14 +163,6 @@ let lightRefractionScene = {
     ]
 }
 
-function toVec3(v:{x:number, y:number, z:number}) {
-    return vec3.fromValues(v.x, v.y, v.z)
-}
-
-function fromVec3(v:vec3) {
-    return { x: v[0], y: v[1], z: v[2]}
-}
-
 function setCamera() {
     const camera = scene.camera
 
@@ -190,6 +182,12 @@ function setCamera() {
     camera.right = fromVec3(right)
 }
 
+function resetCamera() {
+    scene.camera.lookAtTarget = {x: 0.0, y: 0.0, z:0.0}
+    scene.camera.position = {x: 0.0, y: 1.0, z:-5.0}
+    setCamera()
+}
+
 function moveCamera(direction:{x:number, y:number}) {
     const camera = scene.camera
     let position = toVec3(camera.position);
@@ -201,6 +199,13 @@ function moveCamera(direction:{x:number, y:number}) {
     vec3.scaleAndAdd(position, position, forward, direction.y);
     vec3.scaleAndAdd(target, target, right, direction.x);
     vec3.scaleAndAdd(target, target, forward, direction.y);
+
+    // limit min camera height
+    if (position[1] < 0.5) {
+        const diff = 0.5 - position[1]
+        position[1] += diff
+        target[1] += diff
+    }
 
     scene.camera.position = fromVec3(position)
     scene.camera.lookAtTarget = fromVec3(target)
@@ -341,4 +346,4 @@ const getLights = () => {
 
 
 export {scene, sphereByteLength, materialByteLength, lightByteLength, getSkyGradient, getCamera, getSpheres, getMaterials, getLights,
-    moveCamera, rotateCamera, setCamera};
+    moveCamera, rotateCamera, setCamera, resetCamera};

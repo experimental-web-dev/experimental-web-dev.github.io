@@ -483,6 +483,10 @@ async function run(){
 
     window.addEventListener('keydown', event => {
         input.pressedKeys.add(event.key.toLowerCase())
+        if (event.key.toLocaleLowerCase() == 'r') {
+            scene.resetCamera()
+            frameCount = 0
+        }
     })
 
     window.addEventListener('keyup', event => {
@@ -499,7 +503,8 @@ async function run(){
         input.mouse.rotate = (event.buttons === 1);
 
         if (input.mouse.rotate) {
-            if (Math.abs(input.mouse.movementX) > 10 || Math.abs(input.mouse.movementY) > 10){
+            const maxMovement = 100
+            if (Math.abs(input.mouse.movementX) > maxMovement || Math.abs(input.mouse.movementY) > maxMovement){
                 return
             }
             scene.rotateCamera({x: -input.mouse.sensibility * input.mouse.movementY, y: -input.mouse.sensibility * input.mouse.movementX})

@@ -75,4 +75,12 @@ function normalize(v:{x:number, y:number}) {
     }
 }
 
-export { getMvpMatrix, getModelViewMatrix, getProjectionMatrix, normalize}
+function toVec3(v:{x:number, y:number, z:number}) {
+    return vec3.fromValues(v.x, v.y, v.z)
+}
+
+function fromVec3(v:vec3) {
+    return { x: v[0], y: v[1], z: v[2]}
+}
+
+export { getMvpMatrix, getModelViewMatrix, getProjectionMatrix, normalize, toVec3, fromVec3}
