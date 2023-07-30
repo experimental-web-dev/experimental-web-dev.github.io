@@ -17,42 +17,122 @@
             flex-direction: column;
             justify-content: center;
         }
-        p{
+        p {
             font-size: 14px;
-            margin:0
+            margin:0;
         }
         canvas {
            width: 100%;
            height: 100%;
            aspect-ratio: auto;
         }
-        .inputs {
+        .ui-main {
             position: fixed;
             top: 1em;
             right: 1em;
+            width: 100px;
+            transition: right 0.5s ease;
+        }
+        .ui-main.hidden {
+            right: -10em;
+        }
+        .inputs {
             display: flex;
             flex-direction: column;
             gap: 1em;
             text-align: right;
-            width: 100px;
         }
-        input{
+        input {
             width: 100%;
             margin: 0;
         }
+        .input-value {
+            display: flex;
+            flex-direction: row;
+        }
+        .bottom {
+            position: fixed;
+            bottom: 1em;
+            white-space: nowrap;
+        }
+        .property-title {
+            margin-top: 10px;
+        }
+        h5, label, .bottom, .value, .property-title {
+            pointer-events: none;
+            user-select: none;
+        }
     </style>
-  <script type="module" crossorigin src="/assets/webgpu-raytracing-fac15445.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-3cfb730f.js">
+  <script type="module" crossorigin src="/assets/webgpu-raytracing-aa2d87aa.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/math-56068315.js">
 </head>
 <body>
     <canvas></canvas>
-    <div class="inputs">
-        <div class="emission">
-            <p>Emission</p>
-            <input type="color" title="Emissive Color" value="#FFFF00"/>
-            <input type="range" title="Emissive Intensity" min="0.0" max="2.0" step="0.1" value="1.0"/>
+    <div class="ui-main">
+        <div class="inputs">
+            <section>
+                <div>
+                    <h5>Global</h5>
+                    <p class="property-title">FPS Slow Down</p>
+                    <div class="input-value">
+                        <input type="range" title="Frame Rate Slow Down" min="1.0" max="10.0" step="1.0" value="2.0"/>
+                        <p class="value">2.0</p>
+                    </div>
+                    <p class="property-title">Rays per Pixel</p>
+                    <div class="input-value">
+                        <input type="range" title="Rays per Pixel" min="1.0" max="20.0" step="1.0" value="1.0"/>
+                        <p class="value">1.0</p>
+                    </div>
+                    <div class="input-value">
+                        <input type="checkbox" id="check" class="toggle" checked>
+                        <label for="check">Frame Accumulator</label>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h5>Illumination</h5>
+                <div class="skybox">
+                    <p class="property-title">Skybox</p>
+                    <input type="color" id="skybox-sky" title="Sky Color" value="#68EAF3"/>
+                    <input type="color" id="skybox-horizon" title="Horizon Color" value="#D8E4E4"/>
+                    <div class="input-value">
+                        <input type="range" title="Light Intensity" min="0.0" max="1.0" step="0.1" value="0.0"/>
+                        <p class="value">1.0</p>
+                    </div>
+                </div>
+                <div class="light">
+                    <p class="property-title">Light</p>
+                    <input type="color" title="Light Color" value="#FFFFFF"/>
+                    <div class="input-value">
+                        <input type="range" title="Light Intensity" min="0.0" max="2.0" step="0.1" value="0.0"/>
+                        <p class="value">1.0</p>
+                    </div>
+                </div>
+                <div class="emission">
+                    <p class="property-title">Emission</p>
+                    <input type="color" title="Emissive Color" value="#FFFF00"/>
+                    <div class="input-value">
+                        <input type="range" title="Emissive Intensity" min="0.0" max="2.0" step="0.1" value="1.0"/>
+                        <p class="value">1.0</p>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h5>Material</h5>
+                <div class="material">
+                    <select name="Material Type">
+                        <option value="Diffuse" selected>Diffuse</option>
+                        <option value="Glass">Glass</option>
+                        <option value="Metal">Metal</option>
+                    </select>
+                </div>
+            </section>
+        </div>
+        <div class="bottom">
+            <p>Press 'h' to hide</p>
         </div>
     </div>
+    
     
 </body>
 </html>
