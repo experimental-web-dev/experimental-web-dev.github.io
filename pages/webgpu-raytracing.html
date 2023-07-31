@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Raytracing</title>
     <style>
         html,
@@ -12,10 +12,7 @@
             height: 100%;
             background: #000;
             color: #fff;
-            display: flex;
             text-align: center;
-            flex-direction: column;
-            justify-content: center;
         }
         p {
             font-size: 14px;
@@ -30,29 +27,38 @@
             position: fixed;
             top: 1em;
             right: 1em;
-            width: 100px;
+            bottom: 1em;
+            width: 200px;
             transition: right 0.5s ease;
         }
         .ui-main.hidden {
-            right: -10em;
+            right: -250px;
         }
         .inputs {
+            position: relative;
             display: flex;
             flex-direction: column;
+            flex-wrap: wrap-reverse;
             gap: 1em;
             text-align: right;
+            max-height: 95vh;
+        }
+        section {
+            width: 100px;
+            margin: 0px;
         }
         input {
             width: 100%;
-            margin: 0;
+            margin: 0px;
         }
         .input-value {
             display: flex;
             flex-direction: row;
         }
         .bottom {
-            position: fixed;
-            bottom: 1em;
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
             white-space: nowrap;
         }
         .property-title {
