@@ -16,7 +16,7 @@ let drakDiffuseScene = {
     lights: [
         {
             position: {x: 0.0, y: 10.0, z: 0.0},
-            radius: 0.1,
+            radius: 1.0,
             color: {r: 1.0, g: 1.0, b: 1.0},
             intensity: 0.0,
             fallout: {c1: 0.1, c2: 0.01}, //companion constants to linear and quadratic terms

@@ -100,9 +100,14 @@
                 </div>
                 <div class="light">
                     <p class="property-title">Light</p>
-                    <input type="color" title="Light Color" value="#FFFFFF"/>
+                    <input type="color" id="light-color" class="light-property" title="Light Color" value="#FFFFFF"/>
                     <div class="input-value">
-                        <input type="range" title="Light Intensity" min="0.0" max="2.0" step="0.1" value="0.0"/>
+                        <input type="range" id="light-intensity" class="light-property" title="Light Intensity" min="0.0" max="2.0" step="0.1" value="0.0"/>
+                        <p class="value">1.0</p>
+                    </div>
+                    <p class="property-title">Light Radius</p>
+                    <div class="input-value">
+                        <input type="range" id="light-radius" class="light-property" title="Light Radius" min="0.0" max="5.0" step="0.5" value="1.0"/>
                         <p class="value">1.0</p>
                     </div>
                 </div>

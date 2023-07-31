@@ -409,9 +409,10 @@ async function run(){
 
         if (global.frameAccumulator) {
             global.frameCount += 1
-            if (global.frameCount >= 600) {
-                global.frameCount = 0
-            }
+            //console.log(global.frameCount)
+            //if (global.frameCount >= 600) {
+            //    global.frameCount = 0
+            //}
         } else {
             global.frameCount = 0
         }
@@ -506,14 +507,18 @@ async function run(){
 
     let light = {
         id: 0,
-        colorElement: document.querySelector('.light input[type="color"]') as HTMLInputElement,
-        intensityElement: document.querySelector('.light input[type="range"]') as HTMLInputElement,
+        colorElement: document.getElementById('light-color') as HTMLInputElement,
+        intensityElement: document.getElementById('light-intensity') as HTMLInputElement,
+        radiusElement: document.getElementById('light-radius') as HTMLInputElement,
         update: function () {
             const intensity = parseFloat(this.intensityElement.value)
             const color = colorToRGB(this.colorElement.value)
+            const radius = parseFloat(this.radiusElement.value)
 
-            scene.scene.lights[this.id].color = color
-            scene.scene.lights[this.id].intensity = intensity
+            const light = scene.scene.lights[this.id]
+            light.color = color
+            light.intensity = intensity
+            light.radius = radius
         }
     }
     light.update()
@@ -591,12 +596,10 @@ async function run(){
         skybox.update()
     })
 
-    document.querySelector('.light input[type="color"]')?.addEventListener('input', () => {
-        light.update()
-    })
-
-    document.querySelector('.light input[type="range"]')?.addEventListener('input', () => {
-        light.update()
+    document.querySelectorAll('.light-property').forEach(element => {
+        element.addEventListener('input', () => {
+            light.update()
+        })
     })
 
     document.getElementById('accumulator')?.addEventListener('input', event => {

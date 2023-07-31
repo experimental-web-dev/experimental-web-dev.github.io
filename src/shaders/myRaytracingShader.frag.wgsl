@@ -198,7 +198,7 @@ fn stack_raytracing(sphere_count:u32, light_count:u32, ray:Ray, ray_seed:u32) ->
         if (hit.did_hit) {
             stack[stack_pointer].hit_data = hit.hit_data;
             if (materials_array[hit.hit_data.obj_id].diffuse > 0.9){
-                stack[stack_pointer].color += compute_direct_illumination(sphere_count, light_count, stack[stack_pointer].ray.direction, hit.hit_data);
+                stack[stack_pointer].color += compute_direct_illumination(sphere_count, light_count, stack[stack_pointer].ray.direction, hit.hit_data, seed);
             }
             //let light = lights_array[0];
             
@@ -261,7 +261,7 @@ fn stack_raytracing(sphere_count:u32, light_count:u32, ray:Ray, ray_seed:u32) ->
     return stack[0u].color;
 }
 
-fn compute_direct_illumination(sphere_count:u32, light_count:u32, dir_in:vec3<f32>, hit_data:HitData) -> vec3<f32>{
+fn compute_direct_illumination(sphere_count:u32, light_count:u32, dir_in:vec3<f32>, hit_data:HitData, seed:u32) -> vec3<f32>{
     var color = vec3(0.0, 0.0, 0.0);
     let material = materials_array[hit_data.obj_id];
 
@@ -271,7 +271,8 @@ fn compute_direct_illumination(sphere_count:u32, light_count:u32, dir_in:vec3<f3
         if (lights_array[i].intensity < 0.01) {
             continue;
         }
-        var light_dir = lights_array[i].position - hit_data.point;
+        let light_position = lights_array[i].position + lights_array[i].radius * random_in_unit_sphere(seed).value;
+        var light_dir = light_position - hit_data.point;
         let light_distance = length(light_dir);
         // Normalize
         light_dir = light_dir / light_distance;
