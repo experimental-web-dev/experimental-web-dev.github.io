@@ -118,11 +118,38 @@
             <section>
                 <h5>Material</h5>
                 <div class="material">
-                    <select name="Material Type">
+                    <select name="Material Type" id="material-type" class="material-property">
                         <option value="Diffuse" selected>Diffuse</option>
                         <option value="Glass">Glass</option>
                         <option value="Metal">Metal</option>
                     </select>
+                    <p class="property-title">Albedo</p>
+                    <input type="color" id="albedo" class="material-property" title="Albedo" value="#FFFFFF"/>
+                    <p class="property-title">Specular</p>
+                    <div class="input-value">
+                        <input type="range" id="specular" class="material-property" title="Specular Range" min="0.0" max="1.0" step="0.1" value="0.0"/>
+                        <p class="value">1.0</p>
+                    </div>
+                    <p class="property-title">Specular Exp</p>
+                    <div class="input-value">                        
+                        <input type="range" id="specular-exp" class="material-property" title="Specular Exp" min="1.0" max="500.0" step="1.0" value="1.0"/>
+                        <p class="value">1.0</p>
+                    </div>
+                    <p class="property-title">Shininess</p>
+                    <div class="input-value">
+                        <input type="range" id="shininess" class="material-property" title="Shininess" min="1.0" max="100.0" step="1.0" value="1.0"/>
+                        <p class="value">1.0</p>
+                    </div>
+                    <p class="property-title">Metal Fuzz</p>
+                    <div class="input-value">
+                        <input type="range" id="metal-fuzz" class="material-property" title="Metal Fuzz" min="0.0" max="3.0" step="0.1" value="0.0"/>
+                        <p class="value">1.0</p>
+                    </div>
+                    <p class="property-title">Refraction Index</p>
+                    <div class="input-value">
+                        <input type="range" id="refraction-index" class="material-property" title="Shininess" min="1.0" max="3.0" step="0.1" value="2.0"/>
+                        <p class="value">1.0</p>
+                    </div>
                 </div>
             </section>
         </div>

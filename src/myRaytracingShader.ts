@@ -415,8 +415,6 @@ async function run(){
         } else {
             global.frameCount = 0
         }
-
-        //requestAnimationFrame(frame)
     }
 
     function isKeyPressed(key:string) {
@@ -511,14 +509,75 @@ async function run(){
         colorElement: document.querySelector('.light input[type="color"]') as HTMLInputElement,
         intensityElement: document.querySelector('.light input[type="range"]') as HTMLInputElement,
         update: function () {
-            let intensity = parseFloat(this.intensityElement.value)
-            let color = colorToRGB(this.colorElement.value)
+            const intensity = parseFloat(this.intensityElement.value)
+            const color = colorToRGB(this.colorElement.value)
 
             scene.scene.lights[this.id].color = color
             scene.scene.lights[this.id].intensity = intensity
         }
     }
     light.update()
+    
+    let material = {
+        id:0,
+        typeElement: document.getElementById('material-type') as HTMLSelectElement,
+        albedoElement: document.getElementById('albedo') as HTMLInputElement,
+        specularElement: document.getElementById('specular') as HTMLInputElement,
+        specularExpElement: document.getElementById('specular-exp') as HTMLInputElement,
+        shininessElement: document.getElementById('shininess') as HTMLInputElement,
+        metalFuzzElement: document.getElementById('metal-fuzz') as HTMLInputElement,
+        refractionIndexElement: document.getElementById('refraction-index') as HTMLInputElement,
+        upddate: function () {
+            const materialType = this.typeElement.value
+            const albedo = colorToRGB(this.albedoElement.value)
+            const specular = parseFloat(this.specularElement.value)
+            const specularExp = parseFloat(this.specularExpElement.value)
+            const shininess = parseFloat(this.shininessElement.value)
+            const metalFuzz = parseFloat(this.metalFuzzElement.value)
+            const refractionIndex = parseFloat(this.refractionIndexElement.value)
+
+            const material = scene.scene.materials[this.id]
+
+            switch (materialType) {
+                case 'Diffuse': {
+                    material.diffuse = 1.0
+                    material.refraction = 0.0
+                    material.reflection = 0.0
+                    break;
+                }
+                case 'Glass': {
+                    material.diffuse = 0.0
+                    material.refraction = 1.0
+                    material.reflection = 0.0
+                    break;
+                }
+                case 'Metal': {
+                    material.diffuse = 0.0
+                    material.refraction = 0.0
+                    material.reflection = 1.0
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+            
+            material.albedo = albedo
+            material.specular = specular
+            material.specularExp = specularExp
+            material.shininess = 1.0 / shininess //Using the inverse representation on the UI
+            material.fuzz = metalFuzz
+            material.refractiveIndex = refractionIndex
+        }
+    }
+
+    //document.querySelector()
+
+    document.querySelectorAll('.material-property').forEach(element =>{
+        element.addEventListener('input', () => {
+            material.upddate()
+        })
+    })
 
     document.getElementById('skybox-sky')?.addEventListener('input', () => {
         skybox.update()

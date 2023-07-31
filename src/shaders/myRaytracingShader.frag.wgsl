@@ -200,6 +200,7 @@ fn stack_raytracing(sphere_count:u32, light_count:u32, ray:Ray, ray_seed:u32) ->
             if (materials_array[hit.hit_data.obj_id].diffuse > 0.9){
                 stack[stack_pointer].color += compute_direct_illumination(sphere_count, light_count, stack[stack_pointer].ray.direction, hit.hit_data);
             }
+            //let light = lights_array[0];
             
             stack[stack_pointer].color += materials_array[hit.hit_data.obj_id].emission;
             if (stack_pointer + 1u >= stack_size) {break;}
@@ -220,6 +221,11 @@ fn stack_raytracing(sphere_count:u32, light_count:u32, ray:Ray, ray_seed:u32) ->
             } else {
                 out_ray.origin = hit.hit_data.point - DISPLACEMENT_DISTANCE * hit.hit_data.effective_norm;
             }
+            //tests
+            //stack[stack_pointer].color += 0.5 * (dot(hit.hit_data.effective_norm, out_ray.direction) + 1.0);
+            //stack[stack_pointer].color += 0.5 * (dot(stack[stack_pointer].ray.direction, out_ray.direction));
+            //stack[stack_pointer].color += hit.hit_data.effective_norm;
+            
             
             // "Recursive call" is made with continue
             stack[stack_pointer + 1u].ray = out_ray;
@@ -345,7 +351,7 @@ fn scatter_glass(dir_in:vec3<f32>, hit_data:HitData, refraction:f32, seed:u32) -
     var r:f32;
     var sign:f32;
     if hit_data.inside{
-            r = refraction;
+            r = refraction; //inside should have refraction/1.0
             sign = -1.0;
             //scatter.direction = dir_in;
             //return scatter;
@@ -359,7 +365,8 @@ fn scatter_glass(dir_in:vec3<f32>, hit_data:HitData, refraction:f32, seed:u32) -
 
     // Refract
     let cos_theta = abs(dot(dir, norm));
-    let sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+    let sin_theta_square = 1.0 - cos_theta * cos_theta;
+    let sin_theta = sqrt(clamp(sin_theta_square, 0.001, 0.999));
     let sin_theta_2 = r * sin_theta;
 
     let rand01 = rand01_f32(seed);
@@ -373,12 +380,14 @@ fn scatter_glass(dir_in:vec3<f32>, hit_data:HitData, refraction:f32, seed:u32) -
 
     //let out_perpendicular = r * (dir + abs(cos_theta) * norm);
     //let out_parallel = -sqrt(1.0 - dot(out_perpendicular, out_perpendicular)) * norm;//-cos_theta_2 * norm;
-
-    let cos_theta_2 = sqrt(1.0 - sin_theta_2 * sin_theta_2);
+    
+    let cos_theta_2_square = 1.0 - sin_theta_2 * sin_theta_2;
+    let cos_theta_2 = sqrt(clamp(cos_theta_2_square, 0.001, 0.999));
     let out_perpendicular = sin_theta_2 * normalize(dir_in + abs(cos_theta) * norm);
     let out_parallel = -cos_theta_2 * norm;
     
     scatter.direction = normalize(out_parallel + sign * out_perpendicular);
+    //scatter.direction = normalize(out_parallel + out_perpendicular);
 
     return scatter;
 }
