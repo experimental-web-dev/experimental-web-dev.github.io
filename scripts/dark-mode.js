@@ -1,9 +1,10 @@
 const lightCollection = document.querySelectorAll("*");
-const toggle_dark_mode = document.querySelector(".toggle-dark-mode");
+const toggleDarkMode = document.querySelector(".toggle-dark-mode");
+const profilePicture = document.querySelector(".profile-picture");
 
-var dark_mode = false;
+let darkMode = false;
 
-toggle_dark_mode.addEventListener("click", () => {
+toggleDarkMode.addEventListener("click", () => {
 	toggleTheme();
 });
 
@@ -12,19 +13,27 @@ function isThemeSelected(){
 }
 
 function setTheme(dark){
-	dark_mode = dark;
-	if (dark_mode){
+	darkMode = dark;
+	if (darkMode){
 		for (const element of lightCollection){
 			element.classList.add("dark-mode");
 		}
-		toggle_dark_mode.firstElementChild.src="/imgs/moon.svg";
+		toggleDarkMode.firstElementChild.src="/imgs/moon.svg";
+		if (profilePicture) {
+			profilePicture.src = "/imgs/ProfilePictureDark.svg"
+		}
+
 		//document.cokie = "theme=dark; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 		document.cookie = "theme=dark; path=/";
 	}else{
 		for (const element of lightCollection){
 			element.classList.remove("dark-mode");
 		}
-		toggle_dark_mode.firstElementChild.src="/imgs/sun.svg";
+		toggleDarkMode.firstElementChild.src="/imgs/sun.svg";
+		if (profilePicture) {
+			profilePicture.src = "/imgs/ProfilePicture.svg"
+		}
+		
 		//document.cokie = "theme=light; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 		document.cookie = "theme=light; path=/";
 	}
@@ -33,12 +42,12 @@ function setTheme(dark){
 }
 
 function setThemeFromCookie(){
-	dark_mode = isThemeSelected();
-	setTheme(dark_mode);
+	darkMode = isThemeSelected();
+	setTheme(darkMode);
 }
 
 function toggleTheme(){
-	setTheme(!dark_mode);
+	setTheme(!darkMode);
 }
 
 (function(){
