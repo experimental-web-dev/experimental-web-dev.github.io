@@ -8,6 +8,9 @@
 }
 
 body{
+	--action-color: #FF6464;
+	--base-color: #13DCFF;
+	--active-text: #110000;
 	background-color: #ffffff;
 	margin:  0;
 	padding: 0;
@@ -85,10 +88,14 @@ canvas{
 }
 
 .recent-posts-main{
-	background-color: #EDF7FA;
+	--border-width: 4px;
+	background-color: rgb(19, 220, 255);
 	padding: 20px;
 	padding-left: 120px;
 	padding-right: 120px;
+	border-top: var(--border-width) dashed black;
+	border-bottom: var(--border-width) dashed black;
+	margin-bottom: 32px;
 }
 
 .recent-posts-header{
@@ -104,12 +111,13 @@ canvas{
 }
 
 .view-all{
-	color: #00A8CC;
+	color: var(--active-text);
 	text-align: right;
+	font-weight: bold;
 }
 
 .view-all:hover{
-	text-decoration-color: #00A8CC;
+	text-decoration-color: var(--action-text);
 	text-decoration-line: underline;
 }
 
@@ -125,6 +133,8 @@ canvas{
 .recent-post-item{
 	background-color: white;
 	padding: 15px;
+	box-shadow: -4px 1px 4px 1px black;
+	border-radius: 6px;
 }
 
 .post-data{
@@ -260,7 +270,7 @@ figcaption{
 	font-size: 20px;
 	font-style: normal;
 	font-family: Courier New;
-	color: #00b1ff !important;
+	color: var(--base-color) !important;
 	text-decoration-line: none !important;
 }
 
